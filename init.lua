@@ -3,63 +3,116 @@
 -- Author: 逆雪寒
 -- Copyright (c) 2013 半夜三更
 -----------------------------------------------------------------------------
-require("config")
+local Conf = require("config")
 
-__Belial_version__ = "0.8.0"
-__DEBUG__ = true
-_baseRegexFilterRule = {
-	get = "'|(and|or)\\b.+?(>|<|=|\\bin|\\blike)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT\\s+INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE)\\s+(TABLE|DATABASE)|\\.\\/|^\\/?[a-zA-Z]+(\\/[a-zA-Z]+)+$",
-	post = "base64_decode|\\b(and|or)\\b.{1,6}?(=|>|<|\\bin\\b|\\blike\\b)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT.+?INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE).+?(TABLE|DATABASE)|\\.\\/|^\\/?[a-zA-Z]+(\\/[a-zA-Z]+)+$",
-	cookie = "\\b(and|or)\\b.{1,6}?(=|>|<|\\bin\\b|\\blike\\b)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION\\b.+?SELECT|UPDATE\\b.+?)SET|INSERT\\b.+?INTO.+?VALUES|(SELECT|DELETE)\\b.+?FROM|(CREATE|ALTER|DROP|TRUNCATE)\\b.+?(TABLE|DATABASE)",
-	cgiPath = "\\.[^php|com]+\\/.*php"
+_Object = {
+	__DEBUG__ = true,
+	_Conf = {
+		whiteListFileName = Conf.allowAccessPostFilePath,
+		belialFileName = Conf.belialFileLogPath,
+		rejectList = Conf.rejectPostLogPath,
+		ipDenyList = Conf.denyIPAccess
+	},
+	Conf = Conf,
+	_ListState = {
+		down = 0,
+		valid = 1
+	},
+	_ErrorLevel = {
+		error = "error",
+		notice = "notice"
+	}
 }
 
+function _Object:BelialFactory(o)
+	 setmetatable(o,{__index=self})
+	 return o
+end
 
-function getClientIp()
-	IP = ngx.req.get_headers()["X_FORWARDED_FOR"]
-	if IP == nil then
-		IP = ngx.req.get_headers()["X-Real-IP"]
+function _Object:saveFile(data,target)	
+	if Conf.toLog == "On" then
+		local fd = io.open(target,"ab")
+		if fd == nil then return end
+		fd:write(data .. "\n")
+		fd:flush()
+		fd:close()
 	end
-	if IP == nil then
-		IP  = ngx.var.remote_addr
-	end
-	if IP == nil then
-		IP  = "uknow"
-	end
-	return IP
 end
 
 
+function _Object:toLog(msg,level)
+	self:saveFile("["..((not level and "notice") or level).."]::"..msg,self._Conf.belialFileName)
 
-_Conf = {
-	whiteListFileName = Conf.rootDirectory .. "allow.belial",
-	belialFileName = Conf.rootDirectory .. Conf.logDirectory .. "log.belial",
-	rejectList = Conf.rootDirectory .. Conf.logDirectory .. "reject.belial"
-}
+end
 
-_WhiteListState = {
-	down = 0,
-	valid = 1
-}
+--写入白名单
+function _Object:toWhiteFile(data)
+	self:saveFile(data,self._Conf.whiteListFileName)
+end
 
-function inTable(_table,var)
-	for _,v in pairs(_table) do
-		if v == var then return true  end
+
+function _Object:inTable(_table,var)
+	if type(_table) ~= "table" then return false end
+	
+	for _,v in pairs(_table) do 
+		if v == var then 
+			return true  
+		end 
 	end
 	return false
 end
 
-_client_ip_ = ""
-_self_url_ = ""
--- log template
-function clientInfoLog()
-	return " "..getClientIp().." "
-			.." ["..ngx.localtime().."] "
-			..ngx.status.." "
-			..ngx.var.http_user_agent
+function _Object:explode (_str,seperator)
+	local pos, arr = 0, {}
+		for st, sp in function() return string.find( _str, seperator, pos, true ) end do
+			table.insert( arr,string.sub( _str, pos, st-1 ))
+			pos = sp + 1
+		end
+	table.insert( arr, string.sub( _str, pos ) )
+	return arr
 end
 
-function errorPage(error)
+function _Object:split(line)
+	local _tokens = {}
+	for token in string.gmatch(line, "[^%s]+") do
+	   table.insert(_tokens,token)
+	end
+	return _tokens[1],_tokens[2],_tokens[3]
+end
+
+--调试
+function _Object:__debugOutput(msg)
+	if self.__DEBUG__ then self:toLog(msg) end
+end
+
+function _Object:__debugDisplay(msg)
+	if self.__DEBUG__ then 
+		ngx.header.content_type = "text/html"
+		ngx.say(msg)
+		ngx.exit(ngx.HTTP_OK)
+	end
+end
+
+Belial = _Object:BelialFactory({
+	__Belial_version__ = "0.8.0",
+	_baseRegexFilterRule = {
+		get = "'|(and|or)\\b.+?(>|<|=|\\bin|\\blike)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT\\s+INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE)\\s+(TABLE|DATABASE)|\\.\\.\\/|^\\/?[a-zA-Z]+(\\/[a-zA-Z]+)+$",
+		post = "base64_decode|\\b(and|or)\\b.{1,6}?(=|>|<|\\bin\\b|\\blike\\b)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT.+?INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE).+?(TABLE|DATABASE)|\\.\\/|^\\/?[a-zA-Z]+(\\/[a-zA-Z]+)+$",
+		cookie = "\\b(and|or)\\b.{1,6}?(=|>|<|\\bin\\b|\\blike\\b)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION\\b.+?SELECT|UPDATE\\b.+?SET|INSERT\\b.+?INTO.+?VALUES|(SELECT|DELETE)\\b.+?FROM|(CREATE|ALTER|DROP|TRUNCATE)\\b.+?(TABLE|DATABASE)",
+		ngxPathInfoFix = "\\.[^php|com]+\\/.*php"
+	}
+})
+
+function Belial:new()
+	return self
+end
+
+--收集白名单
+function Belial:toWhiteList(data)
+	self:toWhiteFile(data)
+end
+
+function Belial:errorPage(error)
 	local _tpl = string.format([[<html>
 			<head><title>Belial web waf/%s</title></head>
 			<body bgcolor="white">
@@ -67,10 +120,10 @@ function errorPage(error)
 			<hr><center>belial/%s</center>
 			</body>
 			</html>
-	]],__Belial_version__,error,__Belial_version__)
+	]],self.__Belial_version__,error,self.__Belial_version__)
 	
 	--自定义攻击界面
-	local attachPageHtml = attackHtmlPage()
+	local attachPageHtml = self:attackHtmlPage()
 	if attachPageHtml then
 		_tpl =  attachPageHtml
 	end
@@ -81,15 +134,11 @@ function errorPage(error)
 	ngx.exit(ngx.HTTP_OK)
 end
 
-function __debugOutput(msg)
-	if __DEBUG__ then Log:set({toBelialLog = msg,clientInfo = false}) end
-end
-
 --自定意攻击拦截页面
-function attackHtmlPage()
+function Belial:attackHtmlPage()
 	
-	if Conf.attackHtmlPageName ~= "" then
-		local fd = io.open(Conf.attackHtmlPageName,"rb")
+	if self.Conf.attackHtmlPageName ~= "" then
+		local fd = io.open(self.Conf.attackHtmlPageName,"rb")
 		if fd == nil then
 			return
 		end
@@ -100,99 +149,199 @@ function attackHtmlPage()
 	
 end
 
+
+function Belial:getClientIp()
+	if not self.Conf.isBackend then
+		if ngx.var.remote_addr ~= nil then
+			IP  = ngx.var.remote_addr
+		else
+			IP  = "uknow"
+		end
+	else
+		IP = ngx.req.get_headers()["X-Real-IP"]
+		if IP == nil then
+			IP  = ngx.var.remote_addr
+		end
+		if IP == nil then
+			IP  = "uknow"
+		end
+	end
+	return IP
+end
+
+
+function Belial:start(safeModule)
+	for _,m in pairs(safeModule) do m() end
+end
+
+-- ngx.share.dict
+
+NgxShareDict = _Object:BelialFactory({belialBaiDict=nil})
+
+function NgxShareDict:new()
+	
+	self.belialBaiDict = ngx.shared.belial
+	if not self.belialBaiDict then
+		return false
+	end
+	return self
+end
+
+function NgxShareDict:set(line,ac)
+	local succ, err, forcible = self.belialBaiDict:add(line,ac)
+	--内存不足提示
+	if not succ then self:toLog("lua_shared_dict belial was full",self._ErrorLevel.error) end
+	if forcible then self:toLog("lua_shared_dict belial will be full",self._ErrorLevel.notice)  end
+end
+
+function NgxShareDict:get(k)
+	return self.belialBaiDict:get(k)
+end
+
+function NgxShareDict:flush()
+	self.belialBaiDict:flush_all() 
+end
+
 --加载白名单到shared
 
-function loadWhiteListToShareDict()
-	
-	if belialBaiDict == nil then
-		Log:set({toBelialLog = "lua_shared_dict belial is not defined in nginx.conf",clientInfo = false})
+function NgxShareDict:loadWhiteListToShareDict()
+	if self.belialBaiDict == nil then
+		self:toLog("lua_shared_dict belial is not defined in nginx.conf",self._ErrorLevel.notice)
 	end
 	
-	
-	local fd = io.open(_Conf.whiteListFileName,"rb")
+	self:flush()
+	local fd = io.open(self._Conf.whiteListFileName,"rb")
 	if fd == nil then
-		Log:set({toBelialLog = _Conf.whiteListFileName .. " is not found",clientInfo = false})
+		self:toLog(self._Conf.whiteListFileName .. " is not found",self._ErrorLevel.error)
 		return
 	end
 	
 	for line in fd:lines() do
 		local rule = line
-		local ac = _WhiteListState["valid"]
+		local ac = self._ListState["valid"]
 		
 		local prefix = string.sub(rule,1,1)
 
 		if prefix == "#" then --被注释
 			rule = string.sub(rule,2)
-			ac = _WhiteListState["down"]
+			ac = self._ListState["down"]
 		end
-
+		
 		if rule then
-			
-			rule = Conf.webProjectRootDirectory ..rule --完整白名单路径
-			ngxShareDict:set(rule,ac)
+			rule = self.Conf.webProjectRootDirectory ..rule --完整白名单路径
+			self:set(rule,ac)
 		end
 	end
 	fd:close()
 end
 
+denyIpAccessDict = _Object:BelialFactory({
+	denyIPlist = {}
+})
 
-
-
-
---Log class
---
-Log = {
-	target = _Conf.belialFileName
-}
-
-
---添加白名单
-function Log:toWhiteList(data)
-	self.target = _Conf.whiteListFileName
-	self:_write(data)
+function denyIpAccessDict:set(k)
+	if not self:inTable(self.denyIPlist,k) then
+		local fd = io.open(self.Conf.denyIPAccess,"wb")
+		if fd == nil then
+			self:toLog(self.Conf.denyIPAccess .. " is not found",self._ErrorLevel.error)
+			return
+		end
+		fd:write(k)
+		fd:close()
+		table.insert(self.denyIPlist,k)
+	end
 end
 
---纪录日志
-function Log:set(options) --errorPageContent,toBelialLog,tags
-	if not options.tags then  options.tags = "notice"  end
-	if Conf.toLog == "On" and options.toBelialLog then Log:toBelial(options.toBelialLog,options.tags,options.clientInfo) end
-	if options.errorPageContent then errorPage(options.errorPageContent) end
+function denyIpAccessDict:new()
+	return self
 end
 
+function denyIpAccessDict:get(k)
+	return self:inTable(self.denyIPlist,k)
+end
 
-function Log:toBelial(data,tags,clientInfo)
-	if clientInfo ~= false then data = data .. clientInfoLog() end
+function denyIpAccessDict:flush()
+	for _,v in pairs(self.denyIPlist) do tab[k]=nil end
+end
+
+function denyIpAccessDict:print()
+	self:__debugOutput(table.concat(self.denyIPlist," "),"error")	
+end
+
+function denyIpAccessDict:load()
+	if not self.Conf.denyIPAccess then return end
+	local denyIpAccessFileName = self._Conf.ipDenyList
 	
-	local fd = io.open(self.target,"ab")
+	local fd = io.open(denyIpAccessFileName,"rb")
 	if fd == nil then
+		self:toLog(denyIpAccessFileName .. " is not found",self._ErrorLevel.error)
 		return
 	end
-	fd:write("["..((not tags and "notice") or tags).."]::" .. data .. "\n")
-	fd:flush()
+	
+	for ip in fd:lines() do
+		if ip and not self:inTable(self.denyIPlist,ip) then
+			self:set(ip)
+		end
+	end
+	
 	fd:close()
 end
 
-function Log:_toNginxError(data)
-	ngx.log(ngx.ERR,"[Belial]" .. data)
+--自动防护模式
+NgxAutoDenyDict = _Object:BelialFactory({
+		belialAudoDenyDict=nil,
+		__exptime__ = 86400 --exptime
+})
+
+function NgxAutoDenyDict:new()
+	self.belialAudoDenyDict = ngx.shared.belialAutoDeny
+	if self.belialAudoDenyDict == nil then
+		self:toLog("belialAutoDeny belial is not defined in nginx.conf",self._ErrorLevel.notice)
+		return false
+	end
+	self.__exptime__ = self.Conf.autoDenyRuleExptimeSecond
+	return self
 end
 
--- ngx.share.dict
-ngxShareDict = {}
-
-function ngxShareDict:set(line,ac)
-	local succ, err, forcible = belialBaiDict:set(line,ac)
+function NgxAutoDenyDict:set(line,ac)
+	local succ, err, forcible = self.belialAudoDenyDict:add(line,ac,self.__exptime__)
 	--内存不足提示
-	if not succ then Log:set({toBelialLog = "lua_shared_dict belial was full",tags = "error",clientInfo = false}) end
-	if forcible then  Log:set({toBelialLog = "lua_shared_dict belial will be full",clientInfo = false})  end
+	if not succ then self:toLog("belialAudoDenyDict belial was full",self._ErrorLevel.error) end
+	if forcible then self:toLog("belialAudoDenyDict belial will be full",self._ErrorLevel.notice)  end
 end
 
-function ngxShareDict:get(k)
-	return belialBaiDict:get(k)
+function NgxAutoDenyDict:get(k)
+	return self.belialAudoDenyDict:get(k)
+end
+
+function NgxAutoDenyDict:replace(k,v)
+	self.belialAudoDenyDict:replace(k,v,self.__exptime__)
+end
+
+function NgxAutoDenyDict:flush()
+	self.belialAudoDenyDict:flush_all() 
+end
+
+function NgxAutoDenyDict:format(times,attackAmount,requestAmountMilliseconds)
+	return times .. " " ..attackAmount .. " " ..requestAmountMilliseconds
 end
 
 
-belialBaiDict = ngx.shared.belial
-if Conf.whiteModule == "On" then
-	belialBaiDict:flush_all() --清空
-	loadWhiteListToShareDict()
+
+BlShareDict =  NgxShareDict:new()
+if BlShareDict then
+	BlShareDict:loadWhiteListToShareDict()
 end
+
+IpAccessDict = denyIpAccessDict:new()
+IpAccessDict:load()
+
+audoDenyDict = NgxAutoDenyDict:new()
+if audoDenyDict then
+	audoDenyDict:flush()
+end
+
+
+
+
+
