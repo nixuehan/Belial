@@ -21,3 +21,12 @@ http://www.weibo.com/shajj
 
 下面介绍下 belial waf 的所有功能。 模块的开启和关闭都是再  config.lua 里进行配置。 配置完 只需要 nginx reload 就生效鸟
 
+
+1、全局配置
+
+belialFileLogPath = "/data/cake/log.belial"   -- 日志的目录，所有的错误信息和攻击拦截信息所在
+
+isBackend = true  -- 如果 belial waf 位于后端 那就true。否则获得的请求IP不准确
+
+
+
