@@ -12,7 +12,7 @@ local BLrequest_method = ngx.var.request_method
 local BLrequest_filename = ngx.var.request_filename
 local BLtime = ngx.time()
 
-local isPHPhttpRequest = ngx.re.match(BLrequest_filename,".*\\.php$","isjo")
+local isPHPhttpRequest,err = ngx.re.match(BLrequest_filename,".+\\.php","ijo")
 
 function _Object:attackLog(tag)
 	self:saveFile("["..tag .. "]" ..self:clientInfoLog() .."=>>" .. Blunescape_uri(BlSelfUrl),self._Conf.belialFileName)
@@ -137,22 +137,25 @@ local postSafeModule = function ()
 				if allbody then
 					local allbodytable = belial:explode(allbody,boundary)
 					for _,v in ipairs(allbodytable) do
-						local uploadFileExtension = string.match(v,'Content%-Disposition: form%-data; name=".+"; filename=".-(%..-)"')
-						
-						if not uploadFileExtension then  --不是附件字段  做过滤判断
-							local now = string.gsub(v,'Content%-Disposition: form%-data; name=".+"',"")
-							now = string.gsub(now,'\r\n\r\n',"")
+						if v ~= "" and v then
+							local uploadFileExtension,err = ngx.re.match(v,"Content-Disposition:\\s+form-data; name=\".+?\";\\s+filename=\".+(\\..+?)\"","ijo")
 							
-							now = Blunescape_uri(now)
-							if ngx.re.match(now,belial._baseRegexFilterRule.post,"isjo") then 
-								belial:__debugOutput(">>"..now.."<<")
-								_G({msg="multipartPost"})
-							end
-						else --判断附件扩展名
-							if belial.Conf.allowUploadFileExtension then
-								if not belial:inTable(belial.Conf.allowUploadFileExtension,string.lower(uploadFileExtension)) then
-									belial:__debugOutput(">>"..uploadFileExtension.."<<")
-									_G({msg="allowUploadFileExtension"})
+							if not uploadFileExtension then  --不是附件字段  做过滤判断
+								local now = string.gsub(v,'Content%-Disposition: form%-data; name=".+"',"")
+								now = string.gsub(now,'\r\n\r\n',"")
+								
+								now = Blunescape_uri(now)
+								if ngx.re.match(now,belial._baseRegexFilterRule.post,"isjo") then 
+									belial:__debugOutput(">>"..now.."<<")
+									_G({msg="multipartPost"})
+								end
+							else --判断附件扩展名
+								if belial.Conf.allowUploadFileExtension then
+									uploadFileExtension = uploadFileExtension[1]
+									if not belial:inTable(belial.Conf.allowUploadFileExtension,string.lower(uploadFileExtension)) then
+										belial:__debugOutput(">>"..uploadFileExtension.."<<")
+										_G({msg="allowUploadFileExtension"})
+									end
 								end
 							end
 						end
@@ -181,20 +184,19 @@ local postSafeModule = function ()
 end
 
 -- cookie防御
+
 if isPHPhttpRequest then
-	local cookieSafeModule = function()
-		if belial.Conf.cookieMatch == "On" then
-			local _cookie = ngx.var.http_cookie
-			if _cookie then
-				for _,v in string.gmatch(Blunescape_uri(_cookie),"(%w+)=([%w%/%.=_-]+)") do
-					local requestCookie = v
-					if ngx.re.match(requestCookie,belial._baseRegexFilterRule.cookie,"isjo") then 
-						belial:__debugOutput(">>"..requestCookie.."<<")
-						_G({msg="cookie"})
-					end
+	if belial.Conf.cookieMatch == "On" then
+		local _cookie = ngx.var.http_cookie
+		if _cookie then
+			for _,v in string.gmatch(_cookie,"(%w+)=([^;%s]+)") do
+				local requestCookie = Blunescape_uri(v)
+				if ngx.re.match(requestCookie,belial._baseRegexFilterRule.cookie,"isjo") then 
+					belial:__debugOutput(">>"..requestCookie.."<<")
+					_G({msg="cookie"})
 				end
-			end 
-		end
+			end
+		end 
 	end
 end
 
@@ -266,7 +268,6 @@ belial:start({
 	denyIpAccessModule,
 	getSaveModule,
 	postSafeModule,
-	cookieSafeModule,
 	ngxPathInfoSafeModule,
 	allowListSafeModule
 })

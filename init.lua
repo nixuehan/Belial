@@ -96,7 +96,7 @@ end
 Belial = _Object:BelialFactory({
 	__Belial_version__ = "0.8",
 	_baseRegexFilterRule = {
-		get = "'|(and|or)\\b.+?(>|<|=|\\bin|\\blike)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT\\s+INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE)\\s+(TABLE|DATABASE)|\\.\\.\\/|^\\/?[a-zA-Z]+(\\/[a-zA-Z]+)+$",
+		get = "(and|or)\\b.+?(>|<|=|\\bin|\\blike)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT\\s+INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE)\\s+(TABLE|DATABASE)|\\.\\.\\/|^\\/?[a-zA-Z]+(\\/[a-zA-Z]+)+$",
 		post = "base64_decode|\\b(and|or)\\b.{1,6}?(=|>|<|\\bin\\b|\\blike\\b)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT.+?INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE).+?(TABLE|DATABASE)|\\.\\/|^\\/?[a-zA-Z]+(\\/[a-zA-Z]+)+$",
 		cookie = "\\b(and|or)\\b.{1,6}?(=|>|<|\\bin\\b|\\blike\\b)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT\\s+INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE)\\s+(TABLE|DATABASE)",
 		ngxPathInfoFix = "\\.[^php|com]+\\/.*php"
@@ -114,7 +114,7 @@ end
 
 function Belial:errorPage(error)
 	local _tpl = string.format([[<html>
-			<head><title>Belial web waf/%s</title></head>
+			<head><title>Belial waf/%s</title></head>
 			<body bgcolor="white">
 			<center><h1>%s</h1></center>
 			<hr><center>belial/%s</center>
@@ -190,7 +190,7 @@ end
 function NgxShareDict:set(line,ac)
 	local succ, err, forcible = self.belialBaiDict:add(line,ac)
 	--内存不足提示
-	if not succ then self:toLog("lua_shared_dict belial was full",self._ErrorLevel.error) end
+	if not succ then self:toLog("lua_shared_dict belial error:" .. err,self._ErrorLevel.error) end
 	if forcible then self:toLog("lua_shared_dict belial will be full",self._ErrorLevel.notice)  end
 end
 
@@ -241,13 +241,6 @@ denyIpAccessDict = _Object:BelialFactory({
 
 function denyIpAccessDict:set(k)
 	if not self:inTable(self.denyIPlist,k) then
-		local fd = io.open(self.Conf.denyIPAccess,"wb")
-		if fd == nil then
-			self:toLog(self.Conf.denyIPAccess .. " is not found",self._ErrorLevel.error)
-			return
-		end
-		fd:write(k)
-		fd:close()
 		table.insert(self.denyIPlist,k)
 	end
 end
@@ -279,7 +272,7 @@ function denyIpAccessDict:load()
 	end
 	
 	for ip in fd:lines() do
-		if ip and not self:inTable(self.denyIPlist,ip) then
+		if ip then
 			self:set(ip)
 		end
 	end
@@ -306,7 +299,7 @@ end
 function NgxAutoDenyDict:set(line,ac)
 	local succ, err, forcible = self.belialAudoDenyDict:add(line,ac,self.__exptime__)
 	--内存不足提示
-	if not succ then self:toLog("belialAudoDenyDict belial was full",self._ErrorLevel.error) end
+	if not succ then self:toLog("belialAudoDenyDict belial error:" .. err,self._ErrorLevel.error) end
 	if forcible then self:toLog("belialAudoDenyDict belial will be full",self._ErrorLevel.notice)  end
 end
 

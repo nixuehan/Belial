@@ -62,7 +62,7 @@ local Conf = {
 	autoDenyIpModule = "On", -- On 开启   Off关闭
 	accessFrequencySecond = 1, --访问频率 ,达到这个数量就启动计数
 	attackAmount = 20, --HACK次数
-	autoDenyRuleExptimeSecond = 120 -- 规则存在的有效时间 秒单位
+	autoDenyRuleExptimeSecond = 86400 -- 规则存在的有效时间 秒单位
 
 }
 
