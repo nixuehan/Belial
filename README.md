@@ -28,7 +28,6 @@ http://www.weibo.com/shajj
 	attackHtmlPageName = "", --自定义拦截页面 文件路径  例如:/data/belial.html
 	toLog = "On", -- 攻击信息是否纪录到日志文件
 
------------------------------------------------------------------------------
 --文件上传模块
 
 	allowUploadFileExtension = {".jpg",".jpeg",".bmp",".gif",".png"}, --允许上传的扩展名
