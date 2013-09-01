@@ -40,5 +40,21 @@ allowUploadFileExtension = {".jpg",".jpeg",".bmp",".gif",".png"}, --允许上传
 
 cookieMatch = "On",  -- 是否对cookie进行关键字匹配判断
 
+4、post过滤模块
+
+postMatch   = "On",   -- 是否对post请求进行关键字匹配判断
+
+5、post白名单模块
+
+whiteModule = "On"  --是否开POST白名单
+
+getTogether = "Off"  --是否开启收集。*可以先开启 收集个几天，然后获得大部分得post白名单之后再关闭。注意：只有 whiteModule = "On" 和 getTogether = "Off" 后 白名单拦截机制才正式启动
+
+webProjectRootDirectory = "/usr/local/www/nginx", --你网站的www目录(根目录) *记得不带斜杠(/)
+
+allowAccessPostFilePath = "/data/allow.belial", -- 白名单,一个记录一行
+
+rejectPostLogPath = "/data/cake/reject.belial", -- post被拦截的记录
+
 
 
