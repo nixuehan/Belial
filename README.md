@@ -58,4 +58,27 @@ allowAccessPostFilePath = "/data/allow.belial", -- 白名单,一个记录一行
 rejectPostLogPath = "/data/cake/reject.belial", -- post被拦截的记录
 
 
+6、nginx 畸形路径解释防御
+
+ngxPathInfoFixModule = "On"
+
+7、全局放行的ip，比如你公司的IP
+
+allowIpAccess = {"10.211.55.1"}, --不受拦截ip
+
+8、禁止访问的IP列表
+
+denyIPAccess = "/data/denyAccess.ip"
+
+9、自动拦截：根据攻击次数和访问频率进行拦截
+
+autoDenyIpModule = "On", -- On 开启   Off关闭
+
+accessFrequencySecond = 1, --访问频率 ,达到这个数量就启动计数
+
+attackAmount = 20, --HACK次数
+
+autoDenyRuleExptimeSecond = 120 -- 规则存在的有效时间 秒单位
+
+
 
