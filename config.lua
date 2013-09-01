@@ -11,9 +11,9 @@
 local Conf = {
 -----------------------------------------------------------------------------
 -- 全局选项
-	rootDirectory = "/data/", -- belial lua代码所在的目录
-	belialFileLogPath = "/data/cake/log.belial", --  日志的目录
-	isBackend = true, -- 如果 belial waf 位于后端 那就true。否则得到的请求IP获取不准确
+
+	belialFileLogPath = "/data/cake/log.belial", --  日志的目录，所有的错误信息和攻击拦截信息所在
+	isBackend = true, -- 如果 belial waf 位于后端 那就true。否则获得的请求IP不准确
 	attackHtmlPageName = "", --自定义拦截页面 文件路径  例如:/data/belial.html
 	toLog = "On", -- 攻击信息是否纪录到日志文件
 
