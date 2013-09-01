@@ -19,6 +19,12 @@ Belial
 3、 重启下nginx (*注意  以后修改 配置文件 config.lua  只需要 nginx reload) 然后 belial waf 就启动了。 重启nginx 有错误～ 微博@我吧
 http://www.weibo.com/shajj 
 
+
+
+
+*************************************************************************************
+
+
 下面介绍下 belial waf 的所有功能。 模块的开启和关闭都是再  config.lua 里进行配置。 配置完 只需要 nginx reload 就生效鸟
 
 
@@ -32,17 +38,27 @@ attackHtmlPageName = "", --自定义拦截页面 文件路径  例如:/data/beli
 
 toLog = "On", -- 攻击信息是否纪录到日志文件
 
+
+
+
 2、文件上传模块
 
 allowUploadFileExtension = {".jpg",".jpeg",".bmp",".gif",".png"}, --允许上传的扩展名
+
+
+
 
 3、cookie过滤模块
 
 cookieMatch = "On",  -- 是否对cookie进行关键字匹配判断
 
+
+
 4、post过滤模块
 
 postMatch   = "On",   -- 是否对post请求进行关键字匹配判断
+
+
 
 5、post白名单模块
 
@@ -58,17 +74,24 @@ allowAccessPostFilePath = "/data/allow.belial", -- 白名单,一个记录一行
 rejectPostLogPath = "/data/cake/reject.belial", -- post被拦截的记录
 
 
+
 6、nginx 畸形路径解释防御
 
 ngxPathInfoFixModule = "On"
+
+
 
 7、全局放行的ip，比如你公司的IP
 
 allowIpAccess = {"10.211.55.1"}, --不受拦截ip
 
+
+
 8、禁止访问的IP列表
 
 denyIPAccess = "/data/denyAccess.ip"
+
+
 
 9、自动拦截：根据攻击次数和访问频率进行拦截
 
