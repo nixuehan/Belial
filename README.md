@@ -1,7 +1,7 @@
 Belial
 ======
 
-花了几天时间写了个waf 
+花了几天时间写了个waf 。 安装平台是 linux  freebsd 的 nginx 。。 WIN 的 你可以用个 nginx 做反向代理 保护后面的服务。 
 
 
 1、首先安装 nginx lua 模块。 咋装我这里就不介绍了，自己百度或者谷歌都行  http://dwz.cn/belial
