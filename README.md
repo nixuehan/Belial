@@ -1,7 +1,9 @@
 Belial
 ======
 
-花了几天时间写了个waf 。 安装平台是 linux  freebsd 的 nginx 。。 WIN 的 你可以用个 nginx 做反向代理 保护后面的服务。 
+花了几天时间写了个waf 。 安装平台是 linux  freebsd 的 nginx 。。 WIN 的 你可以用个 linux 的 nginx 做反向代理 保护后面的服务。
+
+Belial 目前包含的模块有 ： 
 
 
 1、首先安装 nginx lua 模块。 咋装我这里就不介绍了，自己百度或者谷歌都行  http://dwz.cn/belial
@@ -36,7 +38,7 @@ isBackend = true  -- 如果 belial waf 位于后端 那就true。否则获得的
 
 attackHtmlPageName = "", --自定义拦截页面 文件路径  例如:/data/belial.html
 
-toLog = "On", -- 攻击信息是否纪录到日志文件
+toLog = "On", -- 攻击信息是否纪录到日志文件，当攻击导致日志疯狂增长你可以暂时关闭
 
 
 
