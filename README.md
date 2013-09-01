@@ -72,9 +72,10 @@ getTogether = "Off"  --是否开启收集。*可以先开启 收集个几天，�
 
 webProjectRootDirectory = "/usr/local/www/nginx", --你网站的www目录(根目录) *记得不带斜杠(/)
 
-allowAccessPostFilePath = "/data/allow.belial", -- 白名单,一个记录一行
+allowAccessPostFilePath = "/data/allow.belial", -- 白名单,一个记录一行 支持  #  注释  比如 #/test.php
 
-rejectPostLogPath = "/data/cake/reject.belial", -- post被拦截的记录
+rejectPostLogPath = "/data/cake/reject.belial", -- post被拦截的记录,可以查看这个名单。如果被拦截POST是正常的，就删除然后添加
+到  参数 " allowAccessPostFilePath " 设置的文件里。 然后  nginx reload 就OK了。
 
 
 
