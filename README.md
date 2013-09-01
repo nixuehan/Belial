@@ -48,7 +48,8 @@ postMatch   = "On",   -- 是否对post请求进行关键字匹配判断
 
 whiteModule = "On"  --是否开POST白名单
 
-getTogether = "Off"  --是否开启收集。*可以先开启 收集个几天，然后获得大部分得post白名单之后再关闭。注意：只有 whiteModule = "On" 和 getTogether = "Off" 后 白名单拦截机制才正式启动
+getTogether = "Off"  --是否开启收集。*可以先开启 收集个几天，然后获得大部分得post白名单之后再关闭。
+注意：只有 whiteModule = "On" 和 getTogether = "Off" 后 白名单拦截机制才正式启动
 
 webProjectRootDirectory = "/usr/local/www/nginx", --你网站的www目录(根目录) *记得不带斜杠(/)
 
