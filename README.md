@@ -21,6 +21,7 @@ http://www.weibo.com/shajj
 
 下面介绍下 belial waf 的所有功能。 模块的开启和关闭都是再  config.lua 里进行配置。 配置完 只需要 nginx reload 就生效鸟
 
+
 -- 全局选项
 rootDirectory = "/data/", -- belial lua代码所在的目录
 belialFileLogPath = "/data/cake/log.belial", --  日志的目录，所有的错误信息和攻击拦截信息所在
