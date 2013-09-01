@@ -12,6 +12,8 @@ local BLrequest_method = ngx.var.request_method
 local BLrequest_filename = ngx.var.request_filename
 local BLtime = ngx.time()
 
+local isPHPhttpRequest = ngx.re.match(BLrequest_filename,".*\\.php$","isjo")
+
 function _Object:attackLog(tag)
 	self:saveFile("["..tag .. "]" ..self:clientInfoLog() .."=>>" .. Blunescape_uri(BlSelfUrl),self._Conf.belialFileName)
 	self:errorPage("please stop attack")
@@ -54,7 +56,7 @@ end
 
 --autoDenyIp
 -- if request file is  php
-if ngx.re.match(BLrequest_filename,".*\\.php$","isjo") then
+if isPHPhttpRequest then
 	if belial.Conf.autoDenyIpModule == "On" then
 		if audoDenyDict then
 			local _request = audoDenyDict:get(BLrealIp)
@@ -179,16 +181,20 @@ local postSafeModule = function ()
 end
 
 -- cookie防御
-local cookieSafeModule = function()
-	if belial.Conf.cookieMatch == "On" then
-		local _cookie = ngx.var.http_cookie
-		if _cookie then
-			local requestCookie = Blunescape_uri(_cookie)
-			if ngx.re.match(requestCookie,belial._baseRegexFilterRule.cookie,"isjo") then 
-				belial:__debugOutput(">>"..requestCookie.."<<")
-				_G({msg="cookie"})
-			end
-		end 
+if isPHPhttpRequest then
+	local cookieSafeModule = function()
+		if belial.Conf.cookieMatch == "On" then
+			local _cookie = ngx.var.http_cookie
+			if _cookie then
+				for _,v in string.gmatch(Blunescape_uri(_cookie),"(%w+)=([%w%/%.=_-]+)") do
+					local requestCookie = v
+					if ngx.re.match(requestCookie,belial._baseRegexFilterRule.cookie,"isjo") then 
+						belial:__debugOutput(">>"..requestCookie.."<<")
+						_G({msg="cookie"})
+					end
+				end
+			end 
+		end
 	end
 end
 

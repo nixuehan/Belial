@@ -94,11 +94,11 @@ function _Object:__debugDisplay(msg)
 end
 
 Belial = _Object:BelialFactory({
-	__Belial_version__ = "0.8.0",
+	__Belial_version__ = "0.8",
 	_baseRegexFilterRule = {
 		get = "'|(and|or)\\b.+?(>|<|=|\\bin|\\blike)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT\\s+INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE)\\s+(TABLE|DATABASE)|\\.\\.\\/|^\\/?[a-zA-Z]+(\\/[a-zA-Z]+)+$",
 		post = "base64_decode|\\b(and|or)\\b.{1,6}?(=|>|<|\\bin\\b|\\blike\\b)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT.+?INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE).+?(TABLE|DATABASE)|\\.\\/|^\\/?[a-zA-Z]+(\\/[a-zA-Z]+)+$",
-		cookie = "\\b(and|or)\\b.{1,6}?(=|>|<|\\bin\\b|\\blike\\b)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION\\b.+?SELECT|UPDATE\\b.+?SET|INSERT\\b.+?INTO.+?VALUES|(SELECT|DELETE)\\b.+?FROM|(CREATE|ALTER|DROP|TRUNCATE)\\b.+?(TABLE|DATABASE)",
+		cookie = "\\b(and|or)\\b.{1,6}?(=|>|<|\\bin\\b|\\blike\\b)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT\\s+INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE)\\s+(TABLE|DATABASE)",
 		ngxPathInfoFix = "\\.[^php|com]+\\/.*php"
 	}
 })
