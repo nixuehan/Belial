@@ -46,7 +46,7 @@ toLog = "On", -- 攻击信息是否纪录到日志文件，当攻击导致日志
 
 2、文件上传模块
 
-allowUploadFileExtension = {".jpg",".jpeg",".bmp",".gif",".png"}, --允许上传的扩展名
+allowUploadFileExtension = {".jpg",".jpeg",".bmp",".gif",".png"}, --允许上传的扩展名。*｛｝是关闭检测
 
 
 
