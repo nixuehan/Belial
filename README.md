@@ -28,5 +28,17 @@ belialFileLogPath = "/data/cake/log.belial"   -- 日志的目录，所有的错�
 
 isBackend = true  -- 如果 belial waf 位于后端 那就true。否则获得的请求IP不准确
 
+attackHtmlPageName = "", --自定义拦截页面 文件路径  例如:/data/belial.html
+
+toLog = "On", -- 攻击信息是否纪录到日志文件
+
+2、文件上传模块
+
+allowUploadFileExtension = {".jpg",".jpeg",".bmp",".gif",".png"}, --允许上传的扩展名
+
+3、cookie过滤模块
+
+cookieMatch = "On",  -- 是否对cookie进行关键字匹配判断
+
 
 
