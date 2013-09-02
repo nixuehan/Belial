@@ -31,6 +31,7 @@ function _Object:clientInfoLog()
 			..ngx.var.http_user_agent
 end
 
+
 local belial = Belial:new()
 local BLrealIp = belial:getClientIp()
 
@@ -51,6 +52,14 @@ function _G(options)
 	end
 	
 	belial:attackLog(options.msg)
+end
+
+--lua patch
+function _False(var)
+	if var == 0 or var == "" or var == nil or var == false then
+		return true
+	end
+	return false
 end
 
 
@@ -105,13 +114,20 @@ local getSaveModule = function()
 		for k,v in pairs(getArgs) do
 			if type(v) ~= "boolean" then
 				if type(v) == "table" then
-					_rqdGet = _rqdGet .. table.concat(v," ")
+					local _v,tableConcatReturn = pcall(function()  return table.concat(v," ")   end)
+					if _v then
+						_rqdGet =  tableConcatReturn
+					else
+						belial:__debugOutput(">>"..tableConcatReturn.."<<") --temporary debug
+						_G({msg="debug"})
+						_rqdGet = false
+					end
 				else
 					_rqdGet = v
 				end
-				
-				if _rqdGet then
+				if not _False(_rqdGet) then
 					_rqdGet = Blunescape_uri(_rqdGet)
+					
 					if ngx.re.match(_rqdGet,belial._baseRegexFilterRule.get,"isjo") then 
 						belial:__debugOutput(">>".._rqdGet.."<<")
 						_G({msg="get"})
@@ -164,18 +180,21 @@ local postSafeModule = function ()
 					belial:toLog("nginx 's client_max_body_size and client_body_buffer_size is too small","error")
 				end
 			else
-				
 				local postArgs = ngx.req.get_post_args() ; _rqdPost = ""
 				for k,v in pairs(postArgs) do
-					if type(v) == "table" then
-						_rqdPost = table.concat(v," ")
-					else
-						_rqdPost = v
-					end
-					_rqdPost = Blunescape_uri(_rqdPost)
-					if ngx.re.match(_rqdPost,belial._baseRegexFilterRule.post,"isjo") then
-						belial:__debugOutput(">>".._rqdPost.."<<")
-						_G({msg="Post"})
+					if type(v) ~= "boolean" then
+						if type(v) == "table" then
+							_rqdPost = table.concat(v," ")
+						else
+							_rqdPost = v
+						end
+						if not _False(_rqdPost) then
+							_rqdPost = Blunescape_uri(_rqdPost)
+							if ngx.re.match(_rqdPost,belial._baseRegexFilterRule.post,"isjo") then
+								belial:__debugOutput(">>".._rqdPost.."<<")
+								_G({msg="Post"})
+							end
+						end
 					end
 				end
 			end
