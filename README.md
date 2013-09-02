@@ -1,8 +1,6 @@
 Belial
 ======
-
-<<<<<<< HEAD
-花了几天时间写了个waf 。这个程序是基于 nginx lua module .  运行平台是 linux  freebsd 的 nginx 。。 WIN 的 你可以用个 linux 的 nginx 做反向代理 保护后面的服务。
+写了个waf 自己用 。这个程序是基于 nginx lua module .  运行平台是 linux  freebsd 的 nginx 。。 WIN 的 你可以用个 linux 的 nginx 做反向代理 保护后面的服务。
 
 Belial 目前包含的模块有 ： GET 、 POST 、 COOKIE SQL注入防御、文件上传控制、POST白名单审核、nginx路径解释防御、封IP、
 自动拦截防御 。 
@@ -109,11 +107,3 @@ attackAmount = 20, --HACK次数
 autoDenyRuleExptimeSecond = 120 -- 规则存在的有效时间 秒单位
 
 
-
-=======
-基于nginx lua module 的一个 waf .
-
-基于 nginx lua module    使用说明
-
-https://github.com/nixuehan/Belial/wiki/
->>>>>>> 5cdae2007bbd9bb7288e96bb2e28cd3f8421e698
