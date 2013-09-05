@@ -55,43 +55,84 @@ function _G(options)
 end
 
 --lua patch
-function _False(var)
-	if var == 0 or var == "" or var == nil or var == false then
-		return true
-	end
-	return false
+
+function _splitFloatToIntegerAndRemainder(floatVar)
+	local _var = ngx.re.match(tostring(floatVar),"(\\d+?)\\.(\\d+)","ijo")
+	return _var and tonumber(_var[1]),tonumber(_var[2]) or false
 end
 
 
---autoDenyIp
--- if request file is  php
-if isPHPhttpRequest then
-	if belial.Conf.autoDenyIpModule == "On" then
-		if audoDenyDict then
-			local _request = audoDenyDict:get(BLrealIp)
-			if _request then
-				local lastTime,attackAmount,requestAmountMilliseconds = belial:split(_request)
-				
-				if (BLtime - tonumber(lastTime)) <= belial.Conf.accessFrequencySecond and tonumber(attackAmount) > belial.Conf.attackAmount then --访问频率过快
-					
-					
-					audoDenyDict:replace(BLrealIp,audoDenyDict:format(BLtime,attackAmount,tonumber(requestAmountMilliseconds) + 1))
---					belial:__debugOutput(_request)
-					
-					belial:log(BlSelfUrl,"autoDenyIp") -- record attack
-					ngx.exit(ngx.HTTP_FORBIDDEN)
-				end
-				audoDenyDict:replace(BLrealIp,audoDenyDict:format(BLtime,attackAmount,requestAmountMilliseconds))
-			end
-		end
-	end
-end
-
+if not globalDenyIpDict then return end --global ngx share dict must be set
 
 --allow ip
 if belial.Conf.allowIpAccess then
 	if belial:inTable(belial.Conf.allowIpAccess,BLrealIp) then 
 		return
+	end
+end
+
+--global deny ip
+if globalDenyIpDict then
+	if globalDenyIpDict:get(BLrealIp) then
+		ngx.exit(ngx.HTTP_NOT_FOUND)
+	end
+end
+
+--cc
+
+if belial._Conf.ccMatch and ccDict and next(belial.CcRule) ~= nil then
+	if isPHPhttpRequest then
+		local hackAmountOrlastTime = ccDict:get(BLrealIp)
+		local li = BLtime * 0.0000000001
+		
+		if hackAmountOrlastTime then
+			local hackAmount,lastTimeSecond = _splitFloatToIntegerAndRemainder(hackAmountOrlastTime)
+						
+			if (BLtime - lastTimeSecond) <=1 then
+				hackAmount = hackAmount + 1
+			end
+			
+			for _,v in pairs(belial.CcRule) do
+				if ngx.re.match(BlSelfUrl,v[1],"ijo") then
+					if hackAmount > v[2] then
+						belial:log(BlSelfUrl,"ccDenyIp") -- record attack
+						ccDict:delete(BLrealIp)
+						if belial._Conf.ccDebug then return end
+						globalDenyIpDict:set(BLrealIp,true,belial.Conf.ccDenyIpValidSecond)  -- add to global denyip ngxshare dict
+						ngx.exit(ngx.HTTP_NOT_FOUND)
+					end
+				end
+			end
+
+			ccDict:replace(BLrealIp,hackAmount + li)
+			
+		else --init
+			ccDict:set(BLrealIp,1+li)
+		end
+	end
+end
+
+--autoDenyIp
+-- if request file is  php
+if isPHPhttpRequest then
+	if belial._Conf.autoDenyIpModule then
+		if audoDenyDict then
+			local _request = audoDenyDict:get(BLrealIp)
+			if _request then
+				local lastTime,attackAmount,requestAmountMilliseconds = belial:split(_request)
+				
+				if tonumber(attackAmount) > belial.Conf.attackAmount then
+					
+					audoDenyDict:delete(BLrealIp)
+					--audoDenyDict:replace(BLrealIp,audoDenyDict:format(BLtime,attackAmount,tonumber(requestAmountMilliseconds) + 1))
+--					belial:__debugOutput(_request)
+					globalDenyIpDict:set(BLrealIp,true,belial.Conf.autoDenyIpValidSecond)
+					belial:log(BlSelfUrl,"autoDenyIp") -- record attack
+					ngx.exit(ngx.HTTP_NOT_FOUND)
+				end
+				audoDenyDict:replace(BLrealIp,audoDenyDict:format(BLtime,attackAmount,requestAmountMilliseconds))
+			end
+		end
 	end
 end
 
@@ -125,7 +166,7 @@ local getSaveModule = function()
 				else
 					_rqdGet = v
 				end
-				if not _False(_rqdGet) then
+				if not belial:_False(_rqdGet) then
 					_rqdGet = Blunescape_uri(_rqdGet)
 					
 					if ngx.re.match(_rqdGet,belial._baseRegexFilterRule.get,"isjo") then 
@@ -142,7 +183,7 @@ end
 -- post 防御
 
 local postSafeModule = function () 
-	if belial.Conf.postMatch == "On" then
+	if belial._Conf.postMatch then
 		if BLrequest_method == "POST" then
 			-- 获取boundary
 			local boundary = string.match(BlHeader["content-type"],"boundary=(.+)")
@@ -166,11 +207,11 @@ local postSafeModule = function ()
 									_G({msg="multipartPost"})
 								end
 							else --判断附件扩展名
-								if belial.Conf.allowUploadFileExtension then
+								if belial.Conf.notAllowUploadFileExtension then
 									uploadFileExtension = uploadFileExtension[1]
-									if not belial:inTable(belial.Conf.allowUploadFileExtension,string.lower(uploadFileExtension)) then
+									if belial:inTable(belial.Conf.notAllowUploadFileExtension,string.lower(uploadFileExtension)) then
 										belial:__debugOutput(">>"..uploadFileExtension.."<<")
-										_G({msg="allowUploadFileExtension"})
+										_G({msg="notAllowUploadFileExtension"})
 									end
 								end
 							end
@@ -188,7 +229,7 @@ local postSafeModule = function ()
 						else
 							_rqdPost = v
 						end
-						if not _False(_rqdPost) then
+						if not belial:_False(_rqdPost) then
 							_rqdPost = Blunescape_uri(_rqdPost)
 							if ngx.re.match(_rqdPost,belial._baseRegexFilterRule.post,"isjo") then
 								belial:__debugOutput(">>".._rqdPost.."<<")
@@ -205,7 +246,7 @@ end
 -- cookie防御
 
 if isPHPhttpRequest then
-	if belial.Conf.cookieMatch == "On" then
+	if belial._Conf.cookieMatch then
 		local _cookie = ngx.var.http_cookie
 		if _cookie then
 			for _,v in string.gmatch(_cookie,"(%w+)=([^;%s]+)") do
@@ -220,7 +261,7 @@ if isPHPhttpRequest then
 end
 
 local ngxPathInfoSafeModule = function()
-	if belial.Conf.ngxPathInfoFixModule == "On" then
+	if belial._Conf.ngxPathInfoFixModule then
 		if BlRequestUrl then
 			if ngx.re.match(Blunescape_uri(BlRequestUrl),belial._baseRegexFilterRule.ngxPathInfoFix,"isjo") then
 				belial:__debugOutput(">>"..Blunescape_uri(BlRequestUrl).."<<")
@@ -233,7 +274,7 @@ end
 
 local allowListSafeModule = function()
 -- 白名单防护
-	if belial.Conf.whiteModule == "On" then
+	if belial._Conf.whiteModule and BlShareDict then
 		if string.lower(BLrequest_method) == "post" then
 			
 			local requestAbsolutePath = ngx.var.document_root .. ngx.var.document_uri
@@ -248,7 +289,7 @@ local allowListSafeModule = function()
 			local fullPathRq = string.sub(requestAbsolutePath,string.len(belial.Conf.webProjectRootDirectory)+1)
 			
 			
-			if belial.Conf.getTogether == "On" then
+			if belial._Conf.getTogether then
 				if ac == nil then
 					local rqFD = io.open(requestAbsolutePath,"r")
 					

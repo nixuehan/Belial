@@ -4,6 +4,11 @@
 -- Copyright (c) 2013 半夜三更
 -----------------------------------------------------------------------------
 local Conf = require("config")
+local result = require("rule")
+
+local regularRule,ccUrlList = result["regularRule"],result["ccUrlList"]
+
+local optionIsOn = function (options) return options == "On" and true or false end
 
 _Object = {
 	__DEBUG__ = true,
@@ -11,9 +16,19 @@ _Object = {
 		whiteListFileName = Conf.allowAccessPostFilePath,
 		belialFileName = Conf.belialFileLogPath,
 		rejectList = Conf.rejectPostLogPath,
-		ipDenyList = Conf.denyIPAccess
+		ipDenyList = Conf.denyIPAccess,
+		ccMatch = optionIsOn(Conf.ccMatch),
+		ccDebug = optionIsOn(Conf.ccDebug),
+		autoDenyIpModule = optionIsOn(Conf.autoDenyIpModule),
+		postMatch = optionIsOn(Conf.postMatch),
+		cookieMatch = optionIsOn(Conf.cookieMatch),
+		ngxPathInfoFixModule = optionIsOn(Conf.ngxPathInfoFixModule),
+		whiteModule = optionIsOn(Conf.whiteModule),
+		getTogether = optionIsOn(Conf.getTogether),
+		toLog = optionIsOn(Conf.toLog)
 	},
 	Conf = Conf,
+	CcRule = ccUrlList, --cc list
 	_ListState = {
 		down = 0,
 		valid = 1
@@ -30,7 +45,7 @@ function _Object:BelialFactory(o)
 end
 
 function _Object:saveFile(data,target)	
-	if Conf.toLog == "On" then
+	if self._Conf.toLog then
 		local fd = io.open(target,"ab")
 		if fd == nil then return end
 		fd:write(data .. "\n")
@@ -58,6 +73,13 @@ function _Object:inTable(_table,var)
 		if v == var then 
 			return true  
 		end 
+	end
+	return false
+end
+
+function _Object:_False(var)
+	if var == 0 or var == "" or var == nil or var == false then
+		return true
 	end
 	return false
 end
@@ -95,15 +117,11 @@ end
 
 Belial = _Object:BelialFactory({
 	__Belial_version__ = "0.8",
-	_baseRegexFilterRule = {
-		get = "(and|or)\\b.+?(>|<|=|\\bin|\\blike)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT\\s+INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE)\\s+(TABLE|DATABASE)|(\\.\\.\\/)+|^\\/?[a-zA-Z]+(\\/[a-zA-Z]+)+$",
-		post = "base64_decode|\\b(and|or)\\b.{1,6}?(=|>|<|\\bin\\b|\\blike\\b)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT.+?INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE).+?(TABLE|DATABASE)|\\.\\/|^\\/?[a-zA-Z]+(\\/[a-zA-Z]+)+$",
-		cookie = "\\b(and|or)\\b.{1,6}?(=|>|<|\\bin\\b|\\blike\\b)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT\\s+INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE)\\s+(TABLE|DATABASE)",
-		ngxPathInfoFix = "\\.[^php|com]+\\/.*php"
-	}
+	_baseRegexFilterRule = ""
 })
 
 function Belial:new()
+	self._baseRegexFilterRule = regularRule[self.Conf.regularRule] and regularRule[self.Conf.regularRule] or regularRule["default"]
 	return self
 end
 
@@ -180,18 +198,20 @@ NgxShareDict = _Object:BelialFactory({belialBaiDict=nil})
 
 function NgxShareDict:new()
 	
-	self.belialBaiDict = ngx.shared.belial
+	self.belialBaiDict = ngx.shared.belial_post_allow
 	if not self.belialBaiDict then
+		self:toLog("belial_post_allow is not defined in nginx.conf",self._ErrorLevel.notice)
 		return false
 	end
+	self:loadWhiteListToShareDict()
 	return self
 end
 
 function NgxShareDict:set(line,ac)
 	local succ, err, forcible = self.belialBaiDict:add(line,ac)
 	--内存不足提示
-	if not succ then self:toLog("lua_shared_dict belial error:" .. err,self._ErrorLevel.error) end
-	if forcible then self:toLog("lua_shared_dict belial will be full",self._ErrorLevel.notice)  end
+	if not succ then self:toLog("belial_post_allow belial error:" .. err,self._ErrorLevel.error) end
+	if forcible then self:toLog("belial_post_allow belial will be full",self._ErrorLevel.notice)  end
 end
 
 function NgxShareDict:get(k)
@@ -205,9 +225,7 @@ end
 --加载白名单到shared
 
 function NgxShareDict:loadWhiteListToShareDict()
-	if self.belialBaiDict == nil then
-		self:toLog("lua_shared_dict belial is not defined in nginx.conf",self._ErrorLevel.notice)
-	end
+	if self.belialBaiDict == nil then return end
 	
 	self:flush()
 	local fd = io.open(self._Conf.whiteListFileName,"rb")
@@ -246,6 +264,7 @@ function denyIpAccessDict:set(k)
 end
 
 function denyIpAccessDict:new()
+	self:load()
 	return self
 end
 
@@ -287,24 +306,29 @@ NgxAutoDenyDict = _Object:BelialFactory({
 })
 
 function NgxAutoDenyDict:new()
-	self.belialAudoDenyDict = ngx.shared.belialAutoDeny
+	self.belialAudoDenyDict = ngx.shared.belial_auto_deny
 	if self.belialAudoDenyDict == nil then
-		self:toLog("belialAutoDeny belial is not defined in nginx.conf",self._ErrorLevel.notice)
+		self:toLog("belial_auto_deny is not defined in nginx.conf",self._ErrorLevel.notice)
 		return false
 	end
 	self.__exptime__ = self.Conf.autoDenyRuleExptimeSecond
+	self:flush()
 	return self
 end
 
 function NgxAutoDenyDict:set(line,ac)
 	local succ, err, forcible = self.belialAudoDenyDict:add(line,ac,self.__exptime__)
 	--内存不足提示
-	if not succ then self:toLog("belialAudoDenyDict belial error:" .. err,self._ErrorLevel.error) end
-	if forcible then self:toLog("belialAudoDenyDict belial will be full",self._ErrorLevel.notice)  end
+	if not succ then self:toLog("belial_auto_deny belial error:" .. err,self._ErrorLevel.error) end
+	if forcible then self:toLog("belial_auto_deny belial will be full",self._ErrorLevel.notice)  end
 end
 
 function NgxAutoDenyDict:get(k)
 	return self.belialAudoDenyDict:get(k)
+end
+
+function NgxAutoDenyDict:delete(k)
+	self.belialAudoDenyDict:delete(k)
 end
 
 function NgxAutoDenyDict:replace(k,v)
@@ -320,19 +344,96 @@ function NgxAutoDenyDict:format(times,attackAmount,requestAmountMilliseconds)
 end
 
 
+--cc防御存储
+NgxCCDict = _Object:BelialFactory({
+		belialCCDict=nil,
+		__exptime__ = 86400 --exptime
+})
+
+function NgxCCDict:new()
+	self.belialCCDict = ngx.shared.belial_cc_deny
+	if self.belialCCDict == nil then
+		self:toLog("belial_cc_deny is not defined in nginx.conf",self._ErrorLevel.notice)
+		return false
+	end
+	self.__exptime__ = self.Conf.ccDenyTagExptimeSecond
+	self:flush()
+	return self
+end
+
+function NgxCCDict:set(line,ac)
+	local succ, err, forcible = self.belialCCDict:add(line,ac,self.__exptime__)
+	--内存不足提示
+	if not succ then self:toLog("belial_cc_deny  error:" .. err,self._ErrorLevel.error) end
+	if forcible then self:toLog("belial_cc_deny  will be full",self._ErrorLevel.notice)  end
+end
+
+function NgxCCDict:get(k)
+	return self.belialCCDict:get(k)
+end
+
+function NgxCCDict:replace(k,v)
+	self.belialCCDict:replace(k,v,self.__exptime__)
+end
+
+function NgxCCDict:incr(k)
+	self.belialCCDict:incr(k,1)
+end
+
+function NgxCCDict:delete(k)
+	self.belialCCDict:delete(k)
+end
+
+function NgxCCDict:flush()
+	self.belialCCDict:flush_all() 
+end
+
+
+--global denyip ngxShareDict
+NgxGlobalDenyIpDict = _Object:BelialFactory({
+		belialglobalDenyIpDict=nil,
+		__exptime__ = 86400 --exptime
+})
+
+function NgxGlobalDenyIpDict:new()
+	self.belialglobalDenyIpDict = ngx.shared.belial_global_deny_ip
+	if self.belialglobalDenyIpDict == nil then
+		self:toLog("belial_global_deny_ip is not defined in nginx.conf",self._ErrorLevel.notice)
+		return false
+	end
+	self.__exptime__ = self.Conf.globaldenyIpNgxShareDictExptimeSecond
+	self:flush()
+	return self
+end
+
+function NgxGlobalDenyIpDict:set(line,ac,exptime)
+	exptime = exptime == 0 and self.__exptime__ or exptime
+	local succ, err, forcible = self.belialglobalDenyIpDict:add(line,ac,exptime)
+	--内存不足提示
+	--if not succ then self:toLog("belialglobalDenyIpDict  error:" .. err,self._ErrorLevel.error) end
+	if forcible then self:toLog("belial_global_deny_ip  will be full",self._ErrorLevel.notice)  end
+end
+
+function NgxGlobalDenyIpDict:get(k)
+	return self.belialglobalDenyIpDict:get(k)
+end
+
+function NgxGlobalDenyIpDict:flush()
+	self.belialglobalDenyIpDict:flush_all() 
+end
+
+
 
 BlShareDict =  NgxShareDict:new()
-if BlShareDict then
-	BlShareDict:loadWhiteListToShareDict()
-end
 
 IpAccessDict = denyIpAccessDict:new()
-IpAccessDict:load()
 
 audoDenyDict = NgxAutoDenyDict:new()
-if audoDenyDict then
-	audoDenyDict:flush()
-end
+
+ccDict = NgxCCDict:new()
+
+globalDenyIpDict = NgxGlobalDenyIpDict:new()
+
 
 
 
