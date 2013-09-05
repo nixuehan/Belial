@@ -12,9 +12,9 @@ local Conf = {
 -----------------------------------------------------------------------------
 -- 全局选项
 
-	belialFileLogPath = "/data/belial/cake/log.belial", --  日志的目录，所有的错误信息和攻击拦截信息所在
+	belialFileLogPath = "/data/cake/log.belial", --  日志的目录，所有的错误信息和攻击拦截信息所在
 	isBackend = true, -- 如果 belial waf 位于后端 那就true。否则获得的请求IP不准确
-	attackHtmlPageName = "/data/belial/me.html", --自定义拦截页面 文件路径  例如:/data/belial.html
+	attackHtmlPageName = "", --自定义拦截页面 文件路径  例如:/data/belial.html
 	toLog = "On", -- 攻击信息是否纪录到日志文件
 	regularRule = "ziqing", -- regularRule.lua 规则文件里面的规则名字
 
@@ -41,9 +41,9 @@ local Conf = {
 
 	getTogether = "Off",
 	
-	webProjectRootDirectory = "/data/www/beihai365", --你网站的www目录(根目录) *记得不带斜杠(/)
-	allowAccessPostFilePath = "/data/belial/allow.belial", -- 白名单,一个记录一行
-	rejectPostLogPath = "/data/belial/cake/reject.belial", -- post被拦截的记录
+	webProjectRootDirectory = "/usr/local/www/nginx", --你网站的www目录(根目录) *记得不带斜杠(/)
+	allowAccessPostFilePath = "/data/allow.belial", -- 白名单,一个记录一行
+	rejectPostLogPath = "/data/cake/reject.belial", -- post被拦截的记录
 	
 -----------------------------------------------------------------------------
 -- nginx 畸形路径解释防御
@@ -52,11 +52,11 @@ local Conf = {
 
 -----------------------------------------------------------------------------
 --全局放行的ip，比如你公司的IP
-	allowIpAccess = {"121.31.186.44","218.65.224.189"}, --不受拦截ip
+	allowIpAccess = {"10.211.55.1"}, --不受拦截ip
 	
 -----------------------------------------------------------------------------
 --禁止访问的IP列表
-	denyIPAccess = "/data/belial/denyAccess.ip",--被禁止的IP访问列表
+	denyIPAccess = "/data/denyAccess.ip",--被禁止的IP访问列表
 	
 -------------------------------------------------------------------------------
 --cc攻击和自动deny模式下的被拦截IP的有效期
@@ -67,14 +67,14 @@ local Conf = {
 -- 自动拦截：根据攻击次数和访问频率进行拦截
 	autoDenyIpModule = "On", -- On 开启   Off关闭
 	attackAmount = 20, --HACK次数
-	autoDenyIpValidSecond = 86400, --被禁止IP多久 秒单位   0 就使用全局设置 globaldenyIpNgxShareDictExptimeSecond
+	autoDenyIpValidSecond = 250, --被禁止IP多久 秒单位   0 就使用全局设置 globaldenyIpNgxShareDictExptimeSecond
 	autoDenyRuleExptimeSecond = 86400, -- 规则存在的有效时间 秒单位
 	
 -----------------------------------------------------------------------------
 -- cc攻击防御
 	ccMatch = "On", --是否开启CC防御
 	ccDebug = "Off", --建议开启cc防御前
-	ccDenyIpValidSecond = 1800, --被禁止IP多久 秒单位   0 就使用全局设置 globaldenyIpNgxShareDictExptimeSecond
+	ccDenyIpValidSecond = 250, --被禁止IP多久 秒单位   0 就使用全局设置 globaldenyIpNgxShareDictExptimeSecond
 	ccDenyTagExptimeSecond = 60 -- 动态规则存在的有效时间  秒为单位 *默认就行
 }
 
