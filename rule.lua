@@ -40,10 +40,10 @@ local regularRule =
 local ccUrlList = 
 {
 	{"read.php\\?tid=\\d+?",600},
-    {"searchthread\\.php",600},
-    {"login\\.php",600},
-    {"register\\.php",600},
-    {"thread\\.php",600},
+	{"searchthread\\.php",600},
+	{"login\\.php",600},
+	{"register\\.php",600},
+	{"thread\\.php",600},
 }
 
 return {regularRule=regularRule,ccUrlList=ccUrlList}
