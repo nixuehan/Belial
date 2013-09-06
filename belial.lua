@@ -23,6 +23,13 @@ function _Object:log(msg,tag)
 	self:toLog(msg .." "..self:clientInfoLog(),tag)
 end
 
+function _Object:ccDebugLog(msg)
+	if not self:_False(self.Conf.ccDebugLogPath) then
+		self:cclog(msg .. " "..self:clientInfoLog())
+	else
+		self:log(msg,"debugCC")
+	end
+end
 
 function _Object:clientInfoLog()
 	return " "..self:getClientIp().." "
@@ -39,7 +46,7 @@ local BLrealIp = belial:getClientIp()
 -- times | attackAmount | requestAmountMilliseconds
 
 function _G(options)
-	if audoDenyDict then
+	if belial._Conf.autoDenyIpModule and audoDenyDict then
 		-- 记录攻击ip 计算攻击数量和时间
 		local _request = audoDenyDict:get(BLrealIp)
 		if _request then
@@ -65,10 +72,8 @@ end
 if not globalDenyIpDict then return end --global ngx share dict must be set
 
 --allow ip
-if belial.Conf.allowIpAccess then
-	if belial:inTable(belial.Conf.allowIpAccess,BLrealIp) then 
-		return
-	end
+if belial:inTable(belial.Conf.allowIpAccess,BLrealIp) or belial:inTable(belial.Conf.alloAccessSpidersIp,BLrealIp) then 
+	return
 end
 
 --global deny ip
@@ -80,7 +85,7 @@ end
 
 --cc
 
-if belial._Conf.ccMatch and ccDict and next(belial.CcRule) ~= nil then
+if belial._Conf.ccMatch and ccDict then
 	if isPHPhttpRequest then
 		local hackAmountOrlastTime = ccDict:get(BLrealIp)
 		local li = BLtime * 0.0000000001
@@ -92,20 +97,23 @@ if belial._Conf.ccMatch and ccDict and next(belial.CcRule) ~= nil then
 				hackAmount = hackAmount + 1
 			end
 			
-			for _,v in pairs(belial.CcRule) do
-				if ngx.re.match(BlSelfUrl,v[1],"ijo") then
-					if hackAmount > v[2] then
-						belial:log(BlSelfUrl,"ccDenyIp") -- record attack
-						ccDict:delete(BLrealIp)
-						if belial._Conf.ccDebug then return end
-						globalDenyIpDict:set(BLrealIp,true,belial.Conf.ccDenyIpValidSecond)  -- add to global denyip ngxshare dict
-						ngx.exit(ngx.HTTP_NOT_FOUND)
+			if belial._Conf.ccDebug and hackAmount > belial.Conf.ccDebugRequestAmountOneSecond then 
+				belial:ccDebugLog("["..hackAmount.."]"..BlSelfUrl)
+			end
+			
+			if next(belial.CcRule) ~= nil then
+				for _,v in pairs(belial.CcRule) do
+					if ngx.re.match(BlSelfUrl,v[1],"ijo") then
+						if hackAmount > v[2] then
+							belial:log(BlSelfUrl,"ccDenyIp") -- record attack
+							ccDict:delete(BLrealIp)
+							globalDenyIpDict:set(BLrealIp,true,belial.Conf.ccDenyIpValidSecond)  -- add to global denyip ngxshare dict
+							ngx.exit(ngx.HTTP_NOT_FOUND)
+						end
 					end
 				end
 			end
-
 			ccDict:replace(BLrealIp,hackAmount + li)
-			
 		else --init
 			ccDict:set(BLrealIp,1+li)
 		end

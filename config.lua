@@ -53,6 +53,7 @@ local Conf = {
 -----------------------------------------------------------------------------
 --全局放行的ip，比如你公司的IP
 	allowIpAccess = {"10.211.55.1"}, --不受拦截ip
+	alloAccessSpidersIp = {}, --蜘蛛IP
 	
 -----------------------------------------------------------------------------
 --禁止访问的IP列表
@@ -73,7 +74,11 @@ local Conf = {
 -----------------------------------------------------------------------------
 -- cc攻击防御
 	ccMatch = "On", --是否开启CC防御
+	
 	ccDebug = "Off", --建议开启cc防御前
+	ccDebugRequestAmountOneSecond = 300, --调试模式下每秒请求数
+	ccDebugLogPath = "/data/cake/log.ccDebug", -- 留空就核心日志里
+	
 	ccDenyIpValidSecond = 250, --被禁止IP多久 秒单位   0 就使用全局设置 globaldenyIpNgxShareDictExptimeSecond
 	ccDenyTagExptimeSecond = 60 -- 动态规则存在的有效时间  秒为单位 *默认就行
 }

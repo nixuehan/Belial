@@ -54,10 +54,12 @@ function _Object:saveFile(data,target)
 	end
 end
 
+function _Object:cclog(msg)
+	self:saveFile(msg,self.Conf.ccDebugLogPath)
+end
 
 function _Object:toLog(msg,level)
 	self:saveFile("["..((not level and "notice") or level).."]::"..msg,self._Conf.belialFileName)
-
 end
 
 --写入白名单
