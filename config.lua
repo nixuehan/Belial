@@ -73,10 +73,16 @@ local Conf = {
 	
 -----------------------------------------------------------------------------
 -- cc攻击防御
+	
+	ccGlobalLog = "On", --cc全局记录模块
+	ccGlobalAmount = 300, --每秒多少次就进行记录
+	ccGloablLogPath = "/data/cake/log.ccGlobal",
+	ccGlobalRuleExptimeSecond = 60, --动态规则有效时间
+	
 	ccMatch = "On", --是否开启CC防御
 	
-	ccDebug = "Off", --建议开启cc防御前
-	ccDebugRequestAmountOneSecond = 300, --调试模式下每秒请求数
+	ccDebug = "On", --建议开启cc防御前
+	ccDebugRequestAmount = 300, --调试模式下每秒请求数
 	ccDebugLogPath = "/data/cake/log.ccDebug", -- 留空就核心日志里
 	
 	ccDenyIpValidSecond = 250, --被禁止IP多久 秒单位   0 就使用全局设置 globaldenyIpNgxShareDictExptimeSecond

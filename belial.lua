@@ -31,6 +31,14 @@ function _Object:ccDebugLog(msg)
 	end
 end
 
+function _Object:ccGloablLog(msg)
+	if not self:_False(self.Conf.ccGloablLogPath) then
+		self:ccGlobalLog(msg .. " "..self:clientInfoLog())
+	else
+		self:log(msg,"globalCC")
+	end
+end
+
 function _Object:clientInfoLog()
 	return " "..self:getClientIp().." "
 			.." ["..ngx.localtime().."] "
@@ -84,10 +92,10 @@ if globalDenyIpDict then
 end
 
 --cc
-
-if belial._Conf.ccMatch and ccDict then
+--global cc log
+if belial._Conf.ccGlobalLog and ccGlobalDict then
 	if isPHPhttpRequest then
-		local hackAmountOrlastTime = ccDict:get(BLrealIp)
+		local hackAmountOrlastTime = ccGlobalDict:get(BLrealIp)
 		local li = BLtime * 0.0000000001
 		
 		if hackAmountOrlastTime then
@@ -97,25 +105,49 @@ if belial._Conf.ccMatch and ccDict then
 				hackAmount = hackAmount + 1
 			end
 			
-			if belial._Conf.ccDebug and hackAmount > belial.Conf.ccDebugRequestAmountOneSecond then 
-				belial:ccDebugLog("["..hackAmount.."]"..BlSelfUrl)
+			if hackAmount > belial.Conf.ccGlobalAmount then 
+				belial:ccGloablLog("[global]".."("..hackAmount..")"..BlSelfUrl)
 			end
-			
-			if next(belial.CcRule) ~= nil then
-				for _,v in pairs(belial.CcRule) do
-					if ngx.re.match(BlSelfUrl,v[1],"ijo") then
+				
+			ccGlobalDict:replace(BLrealIp,hackAmount + li)
+		else --init
+			ccGlobalDict:set(BLrealIp,1+li)
+		end
+	end
+end
+
+if belial._Conf.ccMatch and ccDict then
+	if isPHPhttpRequest then
+		if next(belial.CcRule) ~= nil then
+			for _,v in pairs(belial.CcRule) do
+				if ngx.re.match(BlSelfUrl,v[1],"ijo") then
+					local hackAmountOrlastTime = ccDict:get(BLrealIp)
+					local li = BLtime * 0.0000000001
+					
+					if hackAmountOrlastTime then
+						local hackAmount,lastTimeSecond = _splitFloatToIntegerAndRemainder(hackAmountOrlastTime)
+									
+						if (BLtime - lastTimeSecond) <=1 then
+							hackAmount = hackAmount + 1
+						end
+						
+						if belial._Conf.ccDebug and hackAmount > belial.Conf.ccDebugRequestAmount then 
+							belial:ccDebugLog("["..hackAmount.."]"..BlSelfUrl)
+						end
+						
 						if hackAmount > v[2] then
 							belial:log(BlSelfUrl,"ccDenyIp") -- record attack
 							ccDict:delete(BLrealIp)
 							globalDenyIpDict:set(BLrealIp,true,belial.Conf.ccDenyIpValidSecond)  -- add to global denyip ngxshare dict
 							ngx.exit(ngx.HTTP_NOT_FOUND)
 						end
+
+						ccDict:replace(BLrealIp,hackAmount + li)
+					else --init
+						ccDict:set(BLrealIp,1+li)
 					end
 				end
 			end
-			ccDict:replace(BLrealIp,hackAmount + li)
-		else --init
-			ccDict:set(BLrealIp,1+li)
 		end
 	end
 end
@@ -226,7 +258,7 @@ local postSafeModule = function ()
 						end
 					end
 				else
-					belial:toLog("nginx 's client_max_body_size and client_body_buffer_size is too small","error")
+					belial:toLog("nginx 's client_max_body_size and client_body_buffer_size is too small","notice")
 				end
 			else
 				local postArgs = ngx.req.get_post_args() ; _rqdPost = ""
@@ -288,7 +320,7 @@ local allowListSafeModule = function()
 			local requestAbsolutePath = ngx.var.document_root .. ngx.var.document_uri
 			
 			if not ngx.var.document_root or not ngx.var.document_uri then 
-				belial.toLog("ngx.var.document_root or ngx.var.document_uri is empty","error")
+				belial.toLog("ngx.var.document_root or ngx.var.document_uri is empty","notice")
 				return
 			end
 			

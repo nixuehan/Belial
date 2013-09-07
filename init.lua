@@ -25,7 +25,8 @@ _Object = {
 		ngxPathInfoFixModule = optionIsOn(Conf.ngxPathInfoFixModule),
 		whiteModule = optionIsOn(Conf.whiteModule),
 		getTogether = optionIsOn(Conf.getTogether),
-		toLog = optionIsOn(Conf.toLog)
+		toLog = optionIsOn(Conf.toLog),
+		ccGlobalLog = optionIsOn(Conf.ccGlobalLog)
 	},
 	Conf = Conf,
 	CcRule = ccUrlList, --cc list
@@ -56,6 +57,10 @@ end
 
 function _Object:cclog(msg)
 	self:saveFile(msg,self.Conf.ccDebugLogPath)
+end
+
+function _Object:ccGlobalLog(msg)
+	self:saveFile(msg,self.Conf.ccGloablLogPath)
 end
 
 function _Object:toLog(msg,level)
@@ -212,7 +217,7 @@ end
 function NgxShareDict:set(line,ac)
 	local succ, err, forcible = self.belialBaiDict:add(line,ac)
 	--内存不足提示
-	if not succ then self:toLog("belial_post_allow belial error:" .. err,self._ErrorLevel.error) end
+	if not succ then self:toLog("belial_post_allow belial error:" .. err,self._ErrorLevel.notice) end
 	if forcible then self:toLog("belial_post_allow belial will be full",self._ErrorLevel.notice)  end
 end
 
@@ -232,7 +237,7 @@ function NgxShareDict:loadWhiteListToShareDict()
 	self:flush()
 	local fd = io.open(self._Conf.whiteListFileName,"rb")
 	if fd == nil then
-		self:toLog(self._Conf.whiteListFileName .. " is not found",self._ErrorLevel.error)
+		self:toLog(self._Conf.whiteListFileName .. " is not found",self._ErrorLevel.notice)
 		return
 	end
 	
@@ -279,7 +284,7 @@ function denyIpAccessDict:flush()
 end
 
 function denyIpAccessDict:print()
-	self:__debugOutput(table.concat(self.denyIPlist," "),"error")	
+	self:__debugOutput(table.concat(self.denyIPlist," "),"notice")	
 end
 
 function denyIpAccessDict:load()
@@ -288,7 +293,7 @@ function denyIpAccessDict:load()
 	
 	local fd = io.open(denyIpAccessFileName,"rb")
 	if fd == nil then
-		self:toLog(denyIpAccessFileName .. " is not found",self._ErrorLevel.error)
+		self:toLog(denyIpAccessFileName .. " is not found",self._ErrorLevel.notice)
 		return
 	end
 	
@@ -321,7 +326,7 @@ end
 function NgxAutoDenyDict:set(line,ac)
 	local succ, err, forcible = self.belialAudoDenyDict:add(line,ac,self.__exptime__)
 	--内存不足提示
-	if not succ then self:toLog("belial_auto_deny belial error:" .. err,self._ErrorLevel.error) end
+	if not succ then self:toLog("belial_auto_deny belial error:" .. err,self._ErrorLevel.notice) end
 	if forcible then self:toLog("belial_auto_deny belial will be full",self._ErrorLevel.notice)  end
 end
 
@@ -366,7 +371,7 @@ end
 function NgxCCDict:set(line,ac)
 	local succ, err, forcible = self.belialCCDict:add(line,ac,self.__exptime__)
 	--内存不足提示
-	if not succ then self:toLog("belial_cc_deny  error:" .. err,self._ErrorLevel.error) end
+	if not succ then self:toLog("belial_cc_deny  error:" .. err,self._ErrorLevel.notice) end
 	if forcible then self:toLog("belial_cc_deny  will be full",self._ErrorLevel.notice)  end
 end
 
@@ -388,6 +393,51 @@ end
 
 function NgxCCDict:flush()
 	self.belialCCDict:flush_all() 
+end
+
+
+--cc防御存储
+NgxCCGlobalDict = _Object:BelialFactory({
+		belialCCGlobalDict=nil,
+		__exptime__ = 86400 --exptime
+})
+
+function NgxCCGlobalDict:new()
+	self.belialCCGlobalDict = ngx.shared.belial_cc_global
+	if self.belialCCGlobalDict == nil then
+		self:toLog("belial_cc_global is not defined in nginx.conf",self._ErrorLevel.notice)
+		return false
+	end
+	self.__exptime__ = self.Conf.ccGlobalRuleExptimeSecond
+	self:flush()
+	return self
+end
+
+function NgxCCGlobalDict:set(line,ac)
+	local succ, err, forcible = self.belialCCGlobalDict:add(line,ac,self.__exptime__)
+	--内存不足提示
+	if not succ then self:toLog("belial_cc_global  error:" .. err,self._ErrorLevel.notice) end
+	if forcible then self:toLog("belial_cc_global  will be full",self._ErrorLevel.notice)  end
+end
+
+function NgxCCGlobalDict:get(k)
+	return self.belialCCGlobalDict:get(k)
+end
+
+function NgxCCGlobalDict:replace(k,v)
+	self.belialCCGlobalDict:replace(k,v,self.__exptime__)
+end
+
+function NgxCCGlobalDict:incr(k)
+	self.belialCCGlobalDict:incr(k,1)
+end
+
+function NgxCCGlobalDict:delete(k)
+	self.belialCCGlobalDict:delete(k)
+end
+
+function NgxCCGlobalDict:flush()
+	self.belialCCGlobalDict:flush_all() 
 end
 
 
@@ -433,6 +483,8 @@ IpAccessDict = denyIpAccessDict:new()
 audoDenyDict = NgxAutoDenyDict:new()
 
 ccDict = NgxCCDict:new()
+
+ccGlobalDict = NgxCCGlobalDict:new()
 
 globalDenyIpDict = NgxGlobalDenyIpDict:new()
 
