@@ -41,7 +41,7 @@ local Conf = {
 
 	getTogether = "Off",
 	
-	webProjectRootDirectory = "/data/www/beihai365", --你网站的www目录(根目录) *记得不带斜杠(/)
+	webProjectRootDirectory = "/data/www", --你网站的www目录(根目录) *记得不带斜杠(/)
 	allowAccessPostFilePath = "/data/belial/allow.belial", -- 白名单,一个记录一行
 	rejectPostLogPath = "/data/belial/cake/reject.belial", -- post被拦截的记录
 	
@@ -52,7 +52,7 @@ local Conf = {
 
 -----------------------------------------------------------------------------
 --全局放行的ip，比如你公司的IP
-	allowIpAccess = {"121.31.186.44","218.65.224.189"}, --不受拦截ip
+	allowIpAccess = {"121.31.16.44","218.65.224.1"}, --不受拦截ip
 	alloAccessSpidersIp = {}, --蜘蛛IP
 	
 -----------------------------------------------------------------------------
