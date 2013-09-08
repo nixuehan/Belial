@@ -17,7 +17,7 @@ local Conf = {
 	attackHtmlPageName = "/data/belial/me.html", --自定义拦截页面 文件路径  例如:/data/belial.html
 	regularRule = "ziqing", -- regularRule.lua 规则文件里面的规则名字
 	
-	allowIpAccess = {"121.31.186.44","218.65.224.189"}, --不受拦截ip
+	allowIpAccess = {"11.1.86.4","28.65.24.18"}, --不受拦截ip
 	alloAccessSpidersIp = {}, --允许的蜘蛛IP
 	denyIPAccess = "/data/belial/denyAccess.ip",--被禁止的IP访问列表
 	globaldenyIpNgxShareDictExptimeSecond = 3600,  --cc攻击和自动deny模式下的被拦截IP的有效期 单位秒
