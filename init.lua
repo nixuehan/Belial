@@ -123,7 +123,7 @@ function _Object:__debugDisplay(msg)
 end
 
 Belial = _Object:BelialFactory({
-	__Belial_version__ = "0.8",
+	__Belial_version__ = "1.0",
 	_baseRegexFilterRule = ""
 })
 
