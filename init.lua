@@ -291,6 +291,8 @@ function denyIpAccessDict:load()
 	if not self.Conf.denyIPAccess then return end
 	local denyIpAccessFileName = self._Conf.ipDenyList
 	
+	if  self:_False(denyIpAccessFileName) then return end
+	
 	local fd = io.open(denyIpAccessFileName,"rb")
 	if fd == nil then
 		self:toLog(denyIpAccessFileName .. " is not found",self._ErrorLevel.notice)
