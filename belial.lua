@@ -179,7 +179,7 @@ end
 
 local denyIpAccessModule = function()
 --deny ip
-	if belial.Conf.denyIPAccess then
+	if not belial:_False(belial.Conf.denyIPAccess) then
 		if IpAccessDict:get(BLrealIp) then
 			_G({msg="ipDeny"})
 		end
