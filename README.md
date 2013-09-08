@@ -23,5 +23,5 @@ http://www.weibo.com/shajj
 
 
 系列使用教程
-1、 配置文件参数解释 https://github.com/nixuehan/Belial/wiki/config.lua-%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0%E8%A7%A3%E9%87%8A
+1、 配置文件参数解释 http://www.dwz.cn/awCYM
 
