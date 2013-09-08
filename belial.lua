@@ -87,7 +87,7 @@ end
 --global deny ip
 if globalDenyIpDict then
 	if globalDenyIpDict:get(BLrealIp) then
-		ngx.exit(ngx.HTTP_NOT_FOUND)
+		belial:errorPage("please stop attack")
 	end
 end
 
@@ -139,7 +139,7 @@ if belial._Conf.ccMatch and ccDict then
 							belial:log(BlSelfUrl,"ccDenyIp") -- record attack
 							ccDict:delete(BLrealIp)
 							globalDenyIpDict:set(BLrealIp,true,belial.Conf.ccDenyIpValidSecond)  -- add to global denyip ngxshare dict
-							ngx.exit(ngx.HTTP_NOT_FOUND)
+							belial:errorPage("please stop attack")
 						end
 
 						ccDict:replace(BLrealIp,hackAmount + li)
