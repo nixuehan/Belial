@@ -12,3 +12,9 @@ Belial 目前包含的模块有 ： GET 、 POST 、 COOKIE SQL注入防御、�
 
 2、配置文件参数解释 http://www.dwz.cn/awCYM
 
+3、post白名单机制
+
+4、自动拦截机制
+
+5、CC防御机制
+
