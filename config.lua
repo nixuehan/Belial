@@ -41,20 +41,17 @@ local Conf = {
 	rejectPostLogPath = "/data/belial/cake/reject.belial", 
 	
 -------------------------------------------------------------------------------
--- 
+
 	attackAmount = 10, 
 	autoDenyIpValidSecond = 86400, 
 	autoDenyRuleExptimeSecond = 86400,
 	
 -----------------------------------------------------------------------------
--- cc全局记录模块
 	
 	ccGlobalAmount = 240, 
 	ccGloablLogPath = "/data/belial/cake/log.ccGlobal",
 	ccGlobalRuleExptimeSecond = 60, 
 	
--- cc攻击防御模块
-
 	ccDebug = "On", 
 	ccDebugRequestAmount = 60, 
 	ccDebugLogPath = "/data/belial/cake/log.ccDebug", 
