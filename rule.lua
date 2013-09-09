@@ -18,7 +18,7 @@ local regularRule =
 		
 		cookie = "\\b(and|or)\\b.{1,6}?(=|>|<|\\bin\\b|\\blike\\b)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT\\s+INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE)\\s+(TABLE|DATABASE)",
 		
-		ngxPathInfoFix = "\\.[^php]+\\/.*php",
+		ngxPathInfoFix = "\\.(?!php).+\\/.*php",
 	},
 	
 	--适合俺公司的规则
@@ -29,7 +29,7 @@ local regularRule =
 		
 		cookie = "\\b(and|or)\\b.{1,6}?(=|>|<|\\bin\\b|\\blike\\b)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT\\s+INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE)\\s+(TABLE|DATABASE)",
 		
-		ngxPathInfoFix = "\\.[^php|com]+\\/.*php",
+		ngxPathInfoFix = "\\.(?!php|com).+\\/.*php",
 	},
 }
 
@@ -39,11 +39,13 @@ local regularRule =
 -- urlRegular,ccHackAmount
 local ccUrlList = 
 {
-	{"read.php\\?tid=\\d+?",600},
-	{"searchthread\\.php",600},
-	{"login\\.php",600},
-	{"register\\.php",600},
-	{"thread\\.php",600},
+	{"read.php\\?tid=\\d+?",120},
+    {"searchthread\\.php",120},
+    {"login\\.php",120},
+    {"register\\.php",120},
+    {"thread\\.php",120},
+    {"post1\\.php",60},
+	{"item\\/(.+?)\\.html",600}, --伪静态url
 }
 
 return {regularRule=regularRule,ccUrlList=ccUrlList}
