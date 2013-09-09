@@ -45,7 +45,7 @@ local ccUrlList =
     {"register\\.php",120},
     {"thread\\.php",120},
     {"post1\\.php",60},
-	{"item\\/(.+?)\\.html",600}, --伪静态url
+	{"item\\/(.+?)\\.html",120}, --伪静态url
 }
 
 return {regularRule=regularRule,ccUrlList=ccUrlList}

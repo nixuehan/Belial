@@ -199,8 +199,8 @@ local getSaveModule = function()
 					if _v then
 						_rqdGet =  tableConcatReturn
 					else
-						belial:__debugOutput(">>"..tableConcatReturn.."<<") --temporary debug
-						_G({msg="debug"})
+						--belial:__debugOutput(">>"..tableConcatReturn.."<<") --temporary debug
+						--_G({msg="debug"})
 						_rqdGet = false
 					end
 				else
@@ -247,7 +247,7 @@ local postSafeModule = function ()
 									_G({msg="multipartPost"})
 								end
 							else --判断附件扩展名
-								if belial.Conf.notAllowUploadFileExtension then
+								if not belial:_False(belial.Conf.notAllowUploadFileExtension) then
 									uploadFileExtension = uploadFileExtension[1]
 									if belial:inTable(belial.Conf.notAllowUploadFileExtension,string.lower(uploadFileExtension)) then
 										belial:__debugOutput(">>"..uploadFileExtension.."<<")

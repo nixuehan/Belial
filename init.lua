@@ -206,7 +206,7 @@ NgxShareDict = _Object:BelialFactory({belialBaiDict=nil})
 function NgxShareDict:new()
 	
 	self.belialBaiDict = ngx.shared.belial_post_allow
-	if not self.belialBaiDict then
+	if not self.belialBaiDict and self._Conf.whiteModule then
 		self:toLog("belial_post_allow is not defined in nginx.conf",self._ErrorLevel.notice)
 		return false
 	end
@@ -316,7 +316,7 @@ NgxAutoDenyDict = _Object:BelialFactory({
 
 function NgxAutoDenyDict:new()
 	self.belialAudoDenyDict = ngx.shared.belial_auto_deny
-	if self.belialAudoDenyDict == nil then
+	if self.belialAudoDenyDict == nil and self._Conf.autoDenyIpModule then
 		self:toLog("belial_auto_deny is not defined in nginx.conf",self._ErrorLevel.notice)
 		return false
 	end
@@ -361,7 +361,7 @@ NgxCCDict = _Object:BelialFactory({
 
 function NgxCCDict:new()
 	self.belialCCDict = ngx.shared.belial_cc_deny
-	if self.belialCCDict == nil then
+	if self.belialCCDict == nil and self._Conf.ccMatch then
 		self:toLog("belial_cc_deny is not defined in nginx.conf",self._ErrorLevel.notice)
 		return false
 	end
@@ -406,7 +406,7 @@ NgxCCGlobalDict = _Object:BelialFactory({
 
 function NgxCCGlobalDict:new()
 	self.belialCCGlobalDict = ngx.shared.belial_cc_global
-	if self.belialCCGlobalDict == nil then
+	if self.belialCCGlobalDict == nil and self._Conf.ccGlobalLog then
 		self:toLog("belial_cc_global is not defined in nginx.conf",self._ErrorLevel.notice)
 		return false
 	end
