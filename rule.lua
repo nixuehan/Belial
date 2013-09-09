@@ -18,7 +18,7 @@ local regularRule =
 		
 		cookie = "\\b(and|or)\\b.{1,6}?(=|>|<|\\bin\\b|\\blike\\b)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT\\s+INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE)\\s+(TABLE|DATABASE)",
 		
-		ngxPathInfoFix = "\\.(?!php).+\\/.*php",
+		ngxPathInfoFix = "\\..*\\/.*php",
 	},
 	
 	--适合俺公司的规则
@@ -29,7 +29,7 @@ local regularRule =
 		
 		cookie = "\\b(and|or)\\b.{1,6}?(=|>|<|\\bin\\b|\\blike\\b)|\\/\\*.+?\\*\\/|<\\s*script\\b|\\bEXEC\\b|UNION.+?SELECT|UPDATE.+?SET|INSERT\\s+INTO.+?VALUES|(SELECT|DELETE).+?FROM|(CREATE|ALTER|DROP|TRUNCATE)\\s+(TABLE|DATABASE)",
 		
-		ngxPathInfoFix = "\\.(?!php|com).+\\/.*php",
+		ngxPathInfoFix = "\\..*\\/.*php",
 	},
 }
 
