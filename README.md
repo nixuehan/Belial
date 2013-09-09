@@ -20,3 +20,5 @@ Belial 目前包含的模块有 ： GET 、 POST 、 COOKIE SQL注入防御、�
 
 7、CC防御机制
 
+8、日志文件
+
