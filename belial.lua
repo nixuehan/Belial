@@ -6,6 +6,7 @@
 
 local BlHeader = ngx.req.get_headers()
 local BlRequestUrl = ngx.var.request_uri
+local BLFastcgi_script_name = ngx.var.belial_fastcgi_name
 local Blunescape_uri = ngx.unescape_uri
 local BlSelfUrl = Blunescape_uri(BlHeader["Host"] .. BlRequestUrl)
 local BLrequest_method = ngx.var.request_method
@@ -301,9 +302,9 @@ end
 
 local ngxPathInfoSafeModule = function()
 	if belial._Conf.ngxPathInfoFixModule then
-		if BlRequestUrl then
-			if ngx.re.match(Blunescape_uri(BlRequestUrl),belial._baseRegexFilterRule.ngxPathInfoFix,"isjo") then
-				belial:__debugOutput(">>"..Blunescape_uri(BlRequestUrl).."<<")
+		if not belial:_False(BLFastcgi_script_name) then
+			if ngx.re.match(BLFastcgi_script_name,belial._baseRegexFilterRule.ngxPathInfoFix,"isjo") then
+				belial:__debugOutput(">>"..BLFastcgi_script_name.."<<")
 				_G({msg="ngxPathInfo"})
 			end
 		end
