@@ -6,16 +6,16 @@
 
 local BlHeader = ngx.req.get_headers()
 local BlRequestUrl = ngx.var.request_uri
-local BlSelfUrl = BlHeader["Host"] .. BlRequestUrl
 local Blunescape_uri = ngx.unescape_uri
+local BlSelfUrl = Blunescape_uri(BlHeader["Host"] .. BlRequestUrl)
 local BLrequest_method = ngx.var.request_method
 local BLrequest_filename = ngx.var.request_filename
 local BLtime = ngx.time()
 
-local isPHPhttpRequest,err = ngx.re.match(BLrequest_filename,".+\\.php","ijo")
+local isPHPhttpRequest,err = ngx.re.match(BLrequest_filename,".+\\.php$","ijo")
 
 function _Object:attackLog(tag)
-	self:saveFile("["..tag .. "]" ..self:clientInfoLog() .."=>>" .. Blunescape_uri(BlSelfUrl),self._Conf.belialFileName)
+	self:saveFile("["..tag .. "]" ..self:clientInfoLog() .."=>>" .. BlSelfUrl,self._Conf.belialFileName)
 	self:errorPage("please stop attack")
 end
 
@@ -49,7 +49,6 @@ end
 
 local belial = Belial:new()
 local BLrealIp = belial:getClientIp()
-
 
 -- times | attackAmount | requestAmountMilliseconds
 
@@ -282,10 +281,10 @@ local postSafeModule = function ()
 		end
 	end
 end
-
 -- cookie防御
 
 if isPHPhttpRequest then
+	
 	if belial._Conf.cookieMatch then
 		local _cookie = ngx.var.http_cookie
 		if _cookie then
