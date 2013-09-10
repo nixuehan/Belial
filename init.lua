@@ -176,20 +176,12 @@ end
 
 
 function Belial:getClientIp()
-	if not self.Conf.isBackend then
-		if ngx.var.remote_addr ~= nil then
-			IP  = ngx.var.remote_addr
-		else
-			IP  = "uknow"
-		end
-	else
-		IP = ngx.req.get_headers()["X-Real-IP"]
-		if IP == nil then
-			IP  = ngx.var.remote_addr
-		end
-		if IP == nil then
-			IP  = "uknow"
-		end
+	IP = ngx.req.get_headers()["X-Real-IP"]
+	if IP == nil then
+		IP  = ngx.var.remote_addr
+	end
+	if IP == nil then
+		IP  = "uknow"
 	end
 	return IP
 end
@@ -455,6 +447,7 @@ function NgxGlobalDenyIpDict:new()
 		self:toLog("belial_global_deny_ip is not defined in nginx.conf",self._ErrorLevel.notice)
 		return false
 	end
+	
 	self.__exptime__ = self.Conf.globaldenyIpNgxShareDictExptimeSecond
 	self:flush()
 	return self
@@ -475,7 +468,6 @@ end
 function NgxGlobalDenyIpDict:flush()
 	self.belialglobalDenyIpDict:flush_all() 
 end
-
 
 
 BlShareDict =  NgxShareDict:new()

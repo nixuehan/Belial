@@ -9,7 +9,6 @@ local Conf = {
 -----------------------------------------------------------------------------
 
 	belialFileLogPath = "/data/cake/log.belial",
-	isBackend = false, 
 	attackHtmlPageName = "",
 	regularRule = "default", 
 	
