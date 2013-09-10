@@ -9,24 +9,23 @@ local Conf = {
 -----------------------------------------------------------------------------
 
 	belialFileLogPath = "/data/cake/log.belial",
-	isBackend = false, 
 	attackHtmlPageName = "",
 	regularRule = "default", 
 	
 	allowIpAccess = {},
 	alloAccessSpidersIp = {},
-	denyIPAccess = "",--example：/data/denyAccess.ip 
+	denyIPAccess = "/data/denyAccess.ip",--example：/data/denyAccess.ip 
 	globaldenyIpNgxShareDictExptimeSecond = 3600,
 	
 	toLog = "On",
 	
 	cookieMatch = "On", 
 	postMatch   = "On", 
-	whiteModule = "Off", 
-	ngxPathInfoFixModule = "Off",
-	autoDenyIpModule = "Off", 
-	ccGlobalLog = "Off", 
-	ccMatch = "Off", 
+	whiteModule = "On", 
+	ngxPathInfoFixModule = "On",
+	autoDenyIpModule = "On", 
+	ccGlobalLog = "On", 
+	ccMatch = "On", 
 	
 
 -----------------------------------------------------------------------------
@@ -36,9 +35,9 @@ local Conf = {
 -----------------------------------------------------------------------------	
 	getTogether = "Off",
 	
-	webProjectRootDirectory = "/data/www/ting",
-	allowAccessPostFilePath = "/data/belial/allow.belial",
-	rejectPostLogPath = "/data/belial/cake/reject.belial", 
+	webProjectRootDirectory = "/usr/local/www/nginx",
+	allowAccessPostFilePath = "/data/allow.belial",
+	rejectPostLogPath = "/data/cake/reject.belial", 
 	
 -------------------------------------------------------------------------------
 
@@ -49,12 +48,12 @@ local Conf = {
 -----------------------------------------------------------------------------
 	
 	ccGlobalAmount = 240, 
-	ccGloablLogPath = "/data/belial/cake/log.ccGlobal",
+	ccGloablLogPath = "/data/cake/log.ccGlobal",
 	ccGlobalRuleExptimeSecond = 60, 
 	
 	ccDebug = "On", 
 	ccDebugRequestAmount = 60, 
-	ccDebugLogPath = "/data/belial/cake/log.ccDebug", 
+	ccDebugLogPath = "/data/cake/log.ccDebug", 
 	
 	ccDenyIpValidSecond = 36400, 
 	ccDenyTagExptimeSecond = 60 
