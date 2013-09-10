@@ -10,9 +10,11 @@ Belial 目前包含的模块有 ： GET 、 POST 、 COOKIE SQL注入防御、�
 
 1、nginx lua 和 belial waf 安装配置  http://www.dwz.cn/awGdk
 
-2、belial waf 目录结构和文件解释  http://dwz.cn/axyOW
+2、我线上的配置(包括config.lua 和 nginx.conf的配置)
 
-3、配置文件参数解释 http://www.dwz.cn/awCYM
+3、belial waf 目录结构和文件解释  http://dwz.cn/axyOW
+
+4、配置文件参数解释 http://www.dwz.cn/awCYM
 
 5、基本防御机制  http://dwz.cn/axfxQ
 
