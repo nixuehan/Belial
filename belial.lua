@@ -15,8 +15,8 @@ local BLtime = ngx.time()
 
 local isPHPhttpRequest,err = ngx.re.match(BLrequest_filename,".+\\.php$","ijo")
 
-function _Object:attackLog(tag)
-	self:saveFile("["..tag .. "]" ..self:clientInfoLog() .."=>>" .. BlSelfUrl,self._Conf.belialFileName)
+function _Object:attackLog(tag,e)
+	self:saveFile("["..tag .. "]" .. ">>".. e .."<<" ..self:clientInfoLog() .."==>" .. BlSelfUrl,self._Conf.belialFileName)
 	self:errorPage("please stop attack")
 end
 
@@ -66,7 +66,7 @@ function _G(options)
 		end
 	end
 	
-	belial:attackLog(options.msg)
+	belial:attackLog(options.msg,options.e)
 end
 
 --lua patch
@@ -210,8 +210,8 @@ local getSaveModule = function()
 					_rqdGet = Blunescape_uri(_rqdGet)
 					
 					if ngx.re.match(_rqdGet,belial._baseRegexFilterRule.get,"isjo") then 
-						belial:__debugOutput(">>".._rqdGet.."<<")
-						_G({msg="get"})
+--						belial:__debugOutput(">>".._rqdGet.."<<")
+						_G({msg="get",e = _rqdGet})
 					end
 				end
 			end
@@ -243,15 +243,15 @@ local postSafeModule = function ()
 								
 								now = Blunescape_uri(now)
 								if ngx.re.match(now,belial._baseRegexFilterRule.post,"isjo") then 
-									belial:__debugOutput(">>"..now.."<<")
-									_G({msg="multipartPost"})
+--									belial:__debugOutput(">>"..now.."<<")
+									_G({msg="multipartPost",e=now})
 								end
 							else --判断附件扩展名
 								if not belial:_False(belial.Conf.notAllowUploadFileExtension) then
 									uploadFileExtension = uploadFileExtension[1]
 									if belial:inTable(belial.Conf.notAllowUploadFileExtension,string.lower(uploadFileExtension)) then
-										belial:__debugOutput(">>"..uploadFileExtension.."<<")
-										_G({msg="notAllowUploadFileExtension"})
+--										belial:__debugOutput(">>"..uploadFileExtension.."<<")
+										_G({msg="notAllowUploadFileExtension",e=uploadFileExtension})
 									end
 								end
 							end
@@ -272,8 +272,8 @@ local postSafeModule = function ()
 						if not belial:_False(_rqdPost) then
 							_rqdPost = Blunescape_uri(_rqdPost)
 							if ngx.re.match(_rqdPost,belial._baseRegexFilterRule.post,"isjo") then
-								belial:__debugOutput(">>".._rqdPost.."<<")
-								_G({msg="Post"})
+--								belial:__debugOutput(">>".._rqdPost.."<<")
+								_G({msg="Post",e=_rqdPost})
 							end
 						end
 					end
@@ -292,8 +292,8 @@ if isPHPhttpRequest then
 			for _,v in string.gmatch(_cookie,"(%w+)=([^;%s]+)") do
 				local requestCookie = Blunescape_uri(v)
 				if ngx.re.match(requestCookie,belial._baseRegexFilterRule.cookie,"isjo") then 
-					belial:__debugOutput(">>"..requestCookie.."<<")
-					_G({msg="cookie"})
+--					belial:__debugOutput(">>"..requestCookie.."<<")
+					_G({msg="cookie",e=requestCookie})
 				end
 			end
 		end 
@@ -304,11 +304,12 @@ local ngxPathInfoSafeModule = function()
 	if belial._Conf.ngxPathInfoFixModule then
 		if not belial:_False(BLFastcgi_script_name) then
 			if ngx.re.match(BLFastcgi_script_name,belial._baseRegexFilterRule.ngxPathInfoFix,"isjo") then
-				belial:__debugOutput(">>"..BLFastcgi_script_name.."<<")
-				_G({msg="ngxPathInfo"})
+--				belial:__debugOutput(">>"..BLFastcgi_script_name.."<<")
+				_G({msg="ngxPathInfo",e=BLFastcgi_script_name})
 			end
+		else
+			belial:toLog("please : set $belial_fastcgi_name  $fastcgi_script_name in nginx.conf" ,"notice")
 		end
-		
 	end
 end
 
@@ -355,8 +356,8 @@ local allowListSafeModule = function()
 						fd:flush()
 						fd:close()
 					end
-					belial:__debugOutput(">>"..requestAbsolutePath.."<<")
-					_G({msg="whiteList"})
+--					belial:__debugOutput(">>"..requestAbsolutePath.."<<")
+					_G({msg="whiteList",e=requestAbsolutePath})
 				end
 			end
 		end
