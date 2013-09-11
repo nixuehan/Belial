@@ -84,6 +84,20 @@ function _Object:inTable(_table,var)
 	return false
 end
 
+function _Object:inIpList(_table,var)
+	if type(_table) ~= "table" or self:_False(_table)  then return false end
+	
+	for _,v in pairs(_table) do
+		if v == string.gsub(var,"(%w+)%.(%w+)%.(%w+)%.(%w+)","%1.%2.%3.*") then
+			return true
+		end
+		if v == var then 
+			return true  
+		end 
+	end
+	return false
+end
+
 function _Object:_False(var)
 	if var == 0 or var == "" or var == nil or var == false then
 		return true

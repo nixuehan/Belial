@@ -80,7 +80,7 @@ end
 if not globalDenyIpDict then return end --global ngx share dict must be set
 
 --allow ip
-if belial:inTable(belial.Conf.allowIpAccess,BLrealIp) or belial:inTable(belial.Conf.alloAccessSpidersIp,BLrealIp) then 
+if belial:inIpList(belial.Conf.allowIpAccess,BLrealIp) or belial:inIpList(belial.Conf.alloAccessSpidersIp,BLrealIp) then 
 	return
 end
 
@@ -120,8 +120,11 @@ if belial._Conf.ccMatch and ccDict then
 	if isPHPhttpRequest then
 		if next(belial.CcRule) ~= nil then
 			for _,v in pairs(belial.CcRule) do
-				if ngx.re.match(BlSelfUrl,v[1],"ijo") then
-					local hackAmountOrlastTime = ccDict:get(BLrealIp)
+				local vRe = v[1]
+				if ngx.re.match(BlSelfUrl,vRe,"ijo") then
+					local _md5key = ngx.md5(vRe .. BLrealIp)
+--					belial:__debugOutput(_md5key)
+					local hackAmountOrlastTime = ccDict:get(_md5key)
 					local li = BLtime * 0.0000000001
 					
 					if hackAmountOrlastTime then
@@ -137,14 +140,14 @@ if belial._Conf.ccMatch and ccDict then
 						
 						if hackAmount > v[2] then
 							belial:log(BlSelfUrl,"ccDenyIp") -- record attack
-							ccDict:delete(BLrealIp)
+							ccDict:delete(_md5key)
 							globalDenyIpDict:set(BLrealIp,true,belial.Conf.ccDenyIpValidSecond)  -- add to global denyip ngxshare dict
 							belial:errorPage("please stop attack")
 						end
 
-						ccDict:replace(BLrealIp,hackAmount + li)
+						ccDict:replace(_md5key,hackAmount + li)
 					else --init
-						ccDict:set(BLrealIp,1+li)
+						ccDict:set(_md5key,1+li)
 					end
 				end
 			end
@@ -307,8 +310,6 @@ local ngxPathInfoSafeModule = function()
 --				belial:__debugOutput(">>"..BLFastcgi_script_name.."<<")
 				_G({msg="ngxPathInfo",e=BLFastcgi_script_name})
 			end
-		else
-			belial:toLog("please : set $belial_fastcgi_name  $fastcgi_script_name in nginx.conf" ,"notice")
 		end
 	end
 end
