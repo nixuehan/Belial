@@ -12,7 +12,7 @@ local Conf = {
 	attackHtmlPageName = "",
 	regularRule = "default", 
 	
-	allowIpAccess = {},
+	allowIpAccess = {"172.16.1.*","127.0.0.1"},
 	alloAccessSpidersIp = {},
 	denyIPAccess = "/data/denyAccess.ip",--example：/data/denyAccess.ip 
 	globaldenyIpNgxShareDictExptimeSecond = 3600,
