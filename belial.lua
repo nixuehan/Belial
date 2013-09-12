@@ -41,10 +41,11 @@ function _Object:ccGloablLog(msg)
 end
 
 function _Object:clientInfoLog()
+	local ua = ngx.var.http_user_agent or "unknown"
 	return " "..self:getClientIp().." "
 			.." ["..ngx.localtime().."] "
 			..ngx.status.." "
-			..ngx.var.http_user_agent
+			..ua
 end
 
 

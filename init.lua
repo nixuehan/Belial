@@ -195,7 +195,7 @@ function Belial:getClientIp()
 		IP  = ngx.var.remote_addr
 	end
 	if IP == nil then
-		IP  = "uknow"
+		IP  = "unknown"
 	end
 	return IP
 end
